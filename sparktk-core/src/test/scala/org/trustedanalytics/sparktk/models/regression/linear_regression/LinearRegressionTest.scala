@@ -1,0 +1,135 @@
+/**
+ *  Copyright (c) 2016 Intel Corporation 
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.trustedanalytics.sparktk.models.regression.linear_regression
+
+import org.apache.spark.sql.Row
+import org.apache.spark.sql.catalyst.expressions.GenericRow
+import org.scalatest.Matchers
+import org.trustedanalytics.sparktk.frame.{ Frame, DataTypes, Column, FrameSchema }
+import org.trustedanalytics.sparktk.models.regression.RegressionTestMetrics
+import org.trustedanalytics.sparktk.testutils.TestingSparkContextWordSpec
+
+class LinearRegressionTest extends TestingSparkContextWordSpec with Matchers {
+
+  val labeledPoint: Array[Row] = Array(
+    new GenericRow(Array[Any](1.0, 1.0)),
+    new GenericRow(Array[Any](2.0, 2.0)),
+    new GenericRow(Array[Any](3.0, 3.0)),
+    new GenericRow(Array[Any](4.0, 4.0)))
+  val schema = new FrameSchema(List(Column("label", DataTypes.float64), Column("obs1", DataTypes.float64)))
+
+  "Linear Regression" should {
+    //创建一个线性回归模型
+    "create a linear regression model" in {
+
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val model = LinearRegressionModel.train(frame, List("obs1"), "label")
+
+      model shouldBe a[LinearRegressionModel]
+      model.labelColumn should equal("label")
+      model.observationColumns should equal(List("obs1"))
+      model.intercept should equal(0.0)
+      model.weights should equal(List(1.0))
+      model.r2 should equal(1.0)
+      model.iterations should equal(1)
+    }
+    //测试应该返回一个回归度量
+    "test should return a regression metric" in {
+
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val model = LinearRegressionModel.train(frame, List("obs1"), "label")
+      val metrics = model.test(frame)
+
+      metrics shouldBe a[RegressionTestMetrics]
+      metrics.r2 should equal(1.0)
+      metrics.meanSquaredError should equal(0)
+    }
+    //预测线性回归结果正确
+    "predict the results of linear regression correctly" in {
+
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val model = LinearRegressionModel.train(frame, List("obs1"), "label")
+
+      val predictFrame = model.predict(frame)
+      predictFrame.schema.columns should equal(List(Column("label", DataTypes.float64), Column("obs1", DataTypes.float64), Column("predicted_value", DataTypes.float64)))
+      predictFrame.rdd.toArray.toList should equal(List(
+        new GenericRow(Array[Any](1.0, 1.0, 1.0)),
+        new GenericRow(Array[Any](2.0, 2.0, 2.0)),
+        new GenericRow(Array[Any](3.0, 3.0, 3.0)),
+        new GenericRow(Array[Any](4.0, 4.0, 4.0))))
+    }
+    //抛出空frame的异常
+    "throw an exception for null frame" in {
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val thrown = the[IllegalArgumentException] thrownBy LinearRegressionModel.train(null, List("obs1"), "label")
+      thrown.getMessage should equal("requirement failed: frame is required")
+    }
+    //在预测中抛出空帧的异常
+    "throw an exception for null frame in predict" in {
+
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val model = LinearRegressionModel.train(frame, List("obs1"), "label")
+
+      val thrown = the[IllegalArgumentException] thrownBy model.predict(null)
+      thrown.getMessage should equal("requirement failed: require frame to predict")
+    }
+    //为无效的测试列抛出异常
+    "throw an exception for invalid test column" in {
+
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val model = LinearRegressionModel.train(frame, List("obs1"), "label")
+
+      val thrown = the[IllegalArgumentException] thrownBy model.test(null, Some(List("obs1", "obs2")), Some("label"))
+      thrown.getMessage should equal("requirement failed: Number of columns for train and test should be same")
+    }
+    //为空标签列抛出异常
+    "throw an exception for null label column" in {
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val thrown = the[IllegalArgumentException] thrownBy LinearRegressionModel.train(frame, List("obs1"), null)
+      thrown.getMessage should equal("requirement failed: labelColumn must not be null nor empty")
+    }
+    //为null观察列抛出异常
+    "throw an exception for null observation column" in {
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val thrown = the[IllegalArgumentException] thrownBy LinearRegressionModel.train(frame, null, "label")
+      thrown.getMessage should equal("requirement failed: observationColumn must not be null nor empty")
+    }
+    //抛出最大迭代<0的异常
+    "throw an exception for max iterations < 0" in {
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val thrown = the[IllegalArgumentException] thrownBy LinearRegressionModel.train(frame, List("obs1"), "label", maxIterations = (-1))
+      thrown.getMessage should equal("requirement failed: numIterations must be a positive value")
+    }
+    //为reg param <0引发一个异常
+    "throw an exception for reg param < 0" in {
+      val rdd = sparkContext.parallelize(labeledPoint)
+      val frame = new Frame(rdd, schema)
+      val thrown = the[IllegalArgumentException] thrownBy LinearRegressionModel.train(frame, List("obs1"), "label", regParam = (-1.0))
+      thrown.getMessage should equal("requirement failed: regParam should be greater than or equal to 0")
+    }
+
+  }
+
+}

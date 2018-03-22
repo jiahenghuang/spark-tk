@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="ProjectModuleManager">
+    <modules>
+      <module fileurl="file://$PROJECT_DIR$/integration-tests/integration-tests.iml" filepath="$PROJECT_DIR$/integration-tests/integration-tests.iml" />
+      <module fileurl="file://$PROJECT_DIR$/python/python.iml" filepath="$PROJECT_DIR$/python/python.iml" />
+      <module fileurl="file://$PROJECT_DIR$/regression-tests/regression-test.iml" filepath="$PROJECT_DIR$/regression-tests/regression-test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/.idea/spark-tk.iml" filepath="$PROJECT_DIR$/.idea/spark-tk.iml" />
+      <module fileurl="file://$PROJECT_DIR$/sparktk-core/sparktk-core.iml" filepath="$PROJECT_DIR$/sparktk-core/sparktk-core.iml" />
+    </modules>
+  </component>
+</project>

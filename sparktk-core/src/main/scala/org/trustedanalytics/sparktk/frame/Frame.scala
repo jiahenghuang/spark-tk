@@ -1,0 +1,181 @@
+/**
+ *  Copyright (c) 2016 Intel Corporation 
+ *
+ *  Licensed under the Apache License, Version 2.0 (the "License");
+ *  you may not use this file except in compliance with the License.
+ *  You may obtain a copy of the License at
+ *
+ *       http://www.apache.org/licenses/LICENSE-2.0
+ *
+ *  Unless required by applicable law or agreed to in writing, software
+ *  distributed under the License is distributed on an "AS IS" BASIS,
+ *  WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ *  See the License for the specific language governing permissions and
+ *  limitations under the License.
+ */
+package org.trustedanalytics.sparktk.frame
+
+import org.apache.spark.SparkContext
+import org.apache.spark.api.java.JavaRDD
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.{ DataFrame, Row }
+import org.json4s.JsonAST.JValue
+import org.trustedanalytics.sparktk.frame.internal.ops.matrix._
+import org.trustedanalytics.sparktk.frame.internal.{ BaseFrame, ValidationReport }
+import org.trustedanalytics.sparktk.frame.internal.ops._
+import org.trustedanalytics.sparktk.frame.internal.ops.binning.{ BinColumnTransformWithResult, HistogramSummarization, QuantileBinColumnTransformWithResult }
+import org.trustedanalytics.sparktk.frame.internal.ops.classificationmetrics.{ BinaryClassificationMetricsSummarization, MultiClassClassificationMetricsSummarization }
+import org.trustedanalytics.sparktk.frame.internal.ops.cumulativedist._
+import org.trustedanalytics.sparktk.frame.internal.ops.join.{ JoinCrossSummarization, JoinInnerSummarization, JoinLeftSummarization, JoinOuterSummarization, JoinRightSummarization }
+import org.trustedanalytics.sparktk.frame.internal.ops.sample.AssignSampleTransform
+import org.trustedanalytics.sparktk.frame.internal.ops.exportdata._
+import org.trustedanalytics.sparktk.frame.internal.ops.flatten.FlattenColumnsTransform
+import org.trustedanalytics.sparktk.frame.internal.ops.groupby.GroupBySummarization
+import org.trustedanalytics.sparktk.frame.internal.ops.RenameColumnsTransform
+import org.trustedanalytics.sparktk.frame.internal.ops.poweriterationclustering.PowerIterationClusteringSummarization
+import org.trustedanalytics.sparktk.frame.internal.ops.sortedk.SortedKSummarization
+import org.trustedanalytics.sparktk.frame.internal.ops.statistics.correlation.{ CorrelationMatrixSummarization, CorrelationSummarization }
+import org.trustedanalytics.sparktk.frame.internal.ops.statistics.covariance.{ CovarianceMatrixSummarization, CovarianceSummarization }
+import org.trustedanalytics.sparktk.frame.internal.ops.statistics.descriptives.{ CategoricalSummarySummarization, ColumnMedianSummarization, ColumnModeSummarization, ColumnSummaryStatisticsSummarization }
+import org.trustedanalytics.sparktk.frame.internal.ops.statistics.quantiles.QuantilesSummarization
+import org.trustedanalytics.sparktk.frame.internal.ops.timeseries._
+import org.trustedanalytics.sparktk.frame.internal.ops.topk.TopKSummarization
+import org.trustedanalytics.sparktk.frame.internal.ops.unflatten.UnflattenColumnsTransform
+import org.trustedanalytics.sparktk.frame.internal.rdd.{ FrameRdd, PythonJavaRdd }
+
+
+class Frame(frameRdd: RDD[Row], frameSchema: Schema, validateSchema: Boolean = false) extends BaseFrame with Serializable // params named "frameRdd" and "frameSchema" because naming them "rdd" and "schema" masks the base members "rdd" and "schema" in this scope
+    with AddColumnsTransform
+    with AppendFrameTransform
+    with AssignSampleTransform
+    with BinColumnTransformWithResult
+    with BinaryClassificationMetricsSummarization
+    with BoxCoxTransform
+    with CategoricalSummarySummarization
+    with CollectSummarization
+    with ColumnMedianSummarization
+    with ColumnModeSummarization
+    with ColumnSummaryStatisticsSummarization
+    with CopySummarization
+    with CorrelationMatrixSummarization
+    with CorrelationSummarization
+    with CountSummarization
+    with CovarianceMatrixSummarization
+    with CovarianceSummarization
+    with CumulativePercentTransform
+    with CumulativeSumTransform
+    with DotProductTransform
+    with DropColumnsTransform
+    with DropDuplicatesTransform
+    with DropRowsTransform
+    with EcdfSummarization
+    with EntropySummarization
+    with ExportToCsvSummarization
+    with ExportToHbaseSummarization
+    with ExportToHiveSummarization
+    with ExportToJdbcSummarization
+    with ExportToJsonSummarization
+    with FilterTransform
+    with FlattenColumnsTransform
+    with GroupBySummarization
+    with HistogramSummarization
+    with JoinCrossSummarization
+    with JoinInnerSummarization
+    with JoinLeftSummarization
+    with JoinOuterSummarization
+    with JoinRightSummarization
+    with MatrixCovarianceMatrixTransform
+    with MatrixPcaTransform
+    with MatrixSvdTransform
+    with MultiClassClassificationMetricsSummarization
+    with PowerIterationClusteringSummarization
+    with QuantilesSummarization
+    with QuantileBinColumnTransformWithResult
+    with RenameColumnsTransform
+    with ReverseBoxCoxTransform
+    with RowCountSummarization
+    with SaveSummarization
+    with SortTransform
+    with SortedKSummarization
+    with TakeSummarization
+    with TallyPercentTransform
+    with TallyTransform
+    with TimeSeriesAugmentedDickeyFullerTestSummarization
+    with TimeSeriesBreuschGodfreyTestSummarization
+    with TimeSeriesBreuschPaganTestSummarization
+    with TimeSeriesDurbinWatsonTestSummarization
+    with TimeSeriesFromObseravationsSummarization
+    with TimeSeriesSliceSummarization
+    with TopKSummarization
+    with UnflattenColumnsTransform {
+
+  val validationReport = init(frameRdd, frameSchema, validateSchema)
+
+  def this(frameRdd: FrameRdd, validateSchema: Boolean = false) = {
+    this(frameRdd.rdd, frameRdd.schema, validateSchema)
+  }
+
+  /**
+   * Initialize the frame and call schema validation, if it's enabled.
+   * 初始化框架并调用模式验证(如果已启用)
+   * @param frameRdd RDD
+   * @param frameSchema Schema
+   * @param validateSchema Boolean indicating if schema validation should be performed.
+   * @return ValidationReport, if the data is validated against the schema.
+   */
+  def init(frameRdd: RDD[Row], frameSchema: Schema, validateSchema: Boolean): Option[ValidationReport] = {
+    var validationReport: Option[ValidationReport] = None
+
+    // Infer the schema, if a schema was not provided
+    //推断模式,如果没有提供模式
+    val updatedSchema = if (frameSchema == null) {
+      SchemaHelper.inferSchema(frameRdd)
+    }
+    else
+      frameSchema
+
+    // Validate the data against the schema, if the validateSchema is enabled
+    //如果启用了validateSchema,则根据模式验证数据
+    val updatedRdd = if (validateSchema) {
+      val schemaValidation = super.validateSchema(frameRdd, updatedSchema)
+
+      if (schemaValidation.validationReport.numBadValues > 0)
+        logger.warn(s"Schema validation found ${schemaValidation.validationReport.numBadValues} bad values.")
+
+      validationReport = Some(schemaValidation.validationReport)
+      schemaValidation.validatedRdd
+
+    }
+    else
+      frameRdd
+
+    super.init(updatedRdd, updatedSchema)
+
+    validationReport
+  }
+
+  /**
+   * (typically called from pyspark, with jrdd)
+    * (通常从pyspark调用,使用jrdd)
+   *
+   * @param jrdd java array of Any
+   * @param schema frame schema
+   */
+  def this(jrdd: JavaRDD[Array[Any]], schema: Schema) = {
+    this(PythonJavaRdd.toRowRdd(jrdd.rdd, schema), schema)
+  }
+
+  private[frame] def this(sparktkFrameRdd: FrameRdd) = {
+    this(sparktkFrameRdd, sparktkFrameRdd.schema)
+  }
+
+  /**
+   * Construct a spark-tk Frame from a Spark DataFrame
+    * 从Spark DataFrame构建一个spark-tk框架
+   */
+  def this(df: DataFrame) = {
+    this(FrameRdd.toFrameRdd(df))
+  }
+}
+
+

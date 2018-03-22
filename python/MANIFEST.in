@@ -1,0 +1,6 @@
+
+recursive-include sparktk    *
+include requirements.txt 
+include README.rst
+include LICENSE
+include NOTICE
