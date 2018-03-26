@@ -23,7 +23,7 @@ object NumericValidationUtils extends Serializable {
 
   /**
    * True iff a double is a finite number.
-    * 如果双数是有限数字，则为真。
+    * 如果双数是有限数字,则为真。
    * @param double A Double.
    * @return True iff the double is a finite number..
    */
@@ -31,6 +31,7 @@ object NumericValidationUtils extends Serializable {
 
   /**
    * True iff the double is a finite number > 0.
+    * 如果double是有限数> 0,则为真。
    * @param x A double.
    * @return
    */
@@ -38,6 +39,7 @@ object NumericValidationUtils extends Serializable {
 
   /**
    * True if both the data and the weight are finite numbers.
+    * 如果二个元组的数据都是有限数字,则为真。
    * @param pair A pair of doubles.
    * @return
    */

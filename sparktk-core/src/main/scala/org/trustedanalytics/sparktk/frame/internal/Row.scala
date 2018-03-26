@@ -38,7 +38,7 @@ class RowWrapper(override val schema: Schema) extends AbstractRow with Serializa
   require(schema != null, "schema is required")
 
   private lazy val structType = FrameRdd.schemaToStructType(schema)
-
+  //这个注解一般用于序列化的时候,标识某个字段不用被序列化
   @transient override var row: Row = null
 
   /**

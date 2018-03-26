@@ -28,11 +28,11 @@ trait ExportToJsonSummarization extends BaseFrame {
   /**
    * *
    * Write current frame to HDFS in JSON format.
-   * 以JSON格式将当前帧写入HDFS
+   * 以JSON格式将当前frame写入HDFS
    * @param path : The HDFS folder path where the files will be created.
     *             要创建文件的HDFS文件夹路径
    * @param count : The number of records you want. Default (0), or a non-positive value, is the whole frame.
-    *              你想要的记录数量,默认值(0)或非正值是整个帧
+    *              你想要的记录数量,默认值(0)整个frame或非正值,
    * @param offset : The number of rows to skip before exporting to the file. Default is zero (0).
     *               导出到文件之前要跳过的行数,默认为零
    */

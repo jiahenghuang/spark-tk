@@ -39,8 +39,11 @@ object MiscFrameFunctions extends Serializable {
     * 接受输入RDD并返回包含原始内容子集的另一个RDD
    * @param rdd input RDD
    * @param offset rows to be skipped before including rows in the new RDD
+    *              在包含新RDD中的行之前要跳过的行
    * @param count total rows to be included in the new RDD
+    *              总行将包含在新的RDD中
    * @param limit limit on number of rows to be included in the new RDD
+    *              限制要包含在新RDD中的行数
    */
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Long, limit: Int): RDD[T] = {
 
@@ -51,6 +54,11 @@ object MiscFrameFunctions extends Serializable {
     }
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
+    //开始获得行,我们使用总和和计数来确定我们需要读取哪些分区以及哪些分区忽略
+    /**
+      * mapPartitionsWithIndex与mapPartitions基本相同,只是在处理函数的参数是一个二元元组,
+      * 元组的第一个元素是当前处理的分区的index,元组的第二个元素是当前处理的分区元素组成的Iterator
+      */
     val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Long, sum: Long) = sumsAndCounts(i)
       val thisPartStart = sum - ct

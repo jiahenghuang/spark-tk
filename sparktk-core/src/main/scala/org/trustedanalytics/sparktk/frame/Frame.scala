@@ -89,7 +89,7 @@ class Frame(frameRdd: RDD[Row], frameSchema: Schema, validateSchema: Boolean = f
     with SaveSummarization //保存当前frame parquet
     with SortTransform  // 按一列或多列排序
     //with SortedKSummarization //
-    //with TakeSummarization
+    with TakeSummarization
     //with TopKSummarization
     with UnflattenColumnsTransform {
 

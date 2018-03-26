@@ -45,19 +45,24 @@ class UnflattenColumnTest extends WordSpec with Matchers with BeforeAndAfterEach
     Array[Any]("Mary", "1/1/2015", "2", "55"),
     Array[Any]("Sue", "1/1/2015", "1", "65")
   )
-
+  //
   def executeTest(data: List[Array[Any]], rowsInResult: Int): Array[Row] = {
+    //数据列
     val schema = FrameSchema(Vector(Column(nameColumn, DataTypes.string),
       Column(dateColumn, DataTypes.string),
       Column("minute", DataTypes.int32),
       Column("heartRate", DataTypes.int32)))
+    //组合键
     val compositeKeyColumnNames = List(nameColumn, dateColumn)
+    //组合键索引
     val compositeKeyIndices = List(0, 1)
 
     val rows = sparkContext.parallelize(data)
+
     val rdd = FrameRdd.toFrameRdd(schema, rows).groupByRows(row => row.values(compositeKeyColumnNames.toVector))
 
     val targetSchema = UnflattenColumnsFunctions.createTargetSchema(schema, compositeKeyColumnNames)
+
     val resultRdd = UnflattenColumnsFunctions.unflattenRddByCompositeKey(compositeKeyIndices, rdd, targetSchema, ",")
 
     resultRdd.take(rowsInResult)

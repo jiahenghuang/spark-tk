@@ -23,7 +23,7 @@ import org.trustedanalytics.sparktk.frame.{ FrameSchema, Frame, Column, DataType
 class FrameInitTest extends TestingSparkContextWordSpec {
   //Frame初始化
   "Frame init" should {
-    //如果没有提供模式,则推断模式(int和string)
+    //如果没有提供schema式,则使用的推断模式(int和string)
     "infer the schema (int and string) if no schema is provided" in {
       val rows: Array[Row] = Array(
         new GenericRow(Array[Any](1, "one")),
@@ -36,7 +36,7 @@ class FrameInitTest extends TestingSparkContextWordSpec {
       val frame = new Frame(rdd, null)
       assert(frame.schema == FrameSchema(Vector(Column("C0", DataTypes.int32), Column("C1", DataTypes.string))))
     }
-    //当有一个int,浮点数和字符串的混合时推断模式
+    //当有int,浮点数和字符串,混合推断模式
     "infer the schema when there is a mix of int, floats, and strings" in {
       val rows: Array[Row] = Array(
         new GenericRow(Array[Any](1, 1, 2.5)),
@@ -96,7 +96,7 @@ class FrameInitTest extends TestingSparkContextWordSpec {
         val data = frame.take(frame.rowCount().toInt)
       }
     }
-    //测试模式验证
+    //测试推断验证模式
     "test schema validation" in {
       val rows: Array[Row] = Array(
         new GenericRow(Array[Any](1)),
@@ -109,10 +109,12 @@ class FrameInitTest extends TestingSparkContextWordSpec {
       val frame = new Frame(rdd, null, true)
       assert(frame.schema == FrameSchema(Vector(Column("C0", DataTypes.float64))))
       // All values should be double
+      //所有值都是Double类型值
       assert(frame.take(frame.rowCount.toInt).forall(row => row.get(0).isInstanceOf[Double]))
     }
     //如果启用验证,则如果超过前100行的数据与模式不匹配,则包含缺少的值
     "include missing values, if data past the first 100 rows does not match the schema, when validation is enabled" in {
+      //创建一个指定重复数量的元素列表
       val intRows: Array[Row] = Array.fill(100) { new GenericRow(Array[Any](1)) }
       val floatRows: Array[Row] = Array.fill(20) { new GenericRow(Array[Any]("a")) }
       val rows: Array[Row] = intRows ++ floatRows
@@ -132,6 +134,7 @@ class FrameInitTest extends TestingSparkContextWordSpec {
       val rdd = sparkContext.parallelize(rows)
 
       val frame = new Frame(rdd, null, validateSchema = false)
+      frame.dataframe.show(10)
       assert(frame.take(frame.rowCount.toInt).length == frame.rowCount)
       assert(frame.validationReport.isDefined == false)
     }

@@ -61,8 +61,9 @@ object ExportToHbase {
                          tableName: String,
                          keyColumnName: Option[String],
                          familyName: String) = {
-
+  //创建Config
     val conf = createConfig(tableName)
+    //
     val pairRdd = convertToPairRDD(frameRdd,
       familyName,
       keyColumnName.getOrElse(StringUtils.EMPTY))
@@ -90,7 +91,7 @@ object ExportToHbase {
 
   /**
    * Creates pair rdd to save to hbase
-   *创建配对rdd保存到hbase
+   * 创建配对rdd保存到hbase
    * @param rdd              initial frame rdd 初始framerdd
    * @param familyColumnName family column name for hbase
     *                         base的家庭列名称
@@ -108,9 +109,9 @@ object ExportToHbase {
 
   /**
    * Create initial configuration for hbase writer
-   *
-   * @param tableName name of hBase table
-   * @return hBase configuration
+   * HBase的写创建初始配置
+   * @param tableName name of hBase table,hbase表的名称
+   * @return hBase configuration hBase配置
    */
   private def createConfig(tableName: String): Configuration = {
     val conf = HBaseConfiguration.create()
@@ -122,11 +123,11 @@ object ExportToHbase {
 
   /**
    * Builds a row
-   *
-   * @param row              row of the original frame
-   * @param schema           original schema
-   * @param familyColumnName family column name for hbase
-   * @param keyColumnName    key column name for hbase
+   * 建构建一行
+   * @param row              row of the original frame,原始frame的行
+   * @param schema           original schema,原始schema
+   * @param familyColumnName family column name for hbase,hbase的系列名称
+   * @param keyColumnName    key column name for hbase,hbase的关键列名称
    * @return hbase row
    */
   private def buildRow(row: (Array[Any], Long), schema: Schema, familyColumnName: String, keyColumnName: String) = {

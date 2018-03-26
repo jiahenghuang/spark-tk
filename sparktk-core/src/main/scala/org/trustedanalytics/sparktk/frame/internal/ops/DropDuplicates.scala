@@ -21,7 +21,7 @@ import org.trustedanalytics.sparktk.frame.internal.{ FrameState, FrameTransform,
 trait DropDuplicatesTransform extends BaseFrame {
   /**
    * Modify the current frame, removing duplicate rows.
-   * 修改当前帧,删除重复的行
+   * 修改当前frame,删除重复的行
     *
    * Remove data rows which are the same as other rows. The entire row can be checked for duplication, or the search
    * for duplicates can be limited to one or more columns.  This modifies the current frame.

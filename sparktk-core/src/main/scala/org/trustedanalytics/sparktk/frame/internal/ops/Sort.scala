@@ -33,6 +33,8 @@ trait SortTransform extends BaseFrame {
 case class Sort(columnNamesAndAscending: List[(String, Boolean)]) extends FrameTransform {
   require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more column names is required.")
   override def work(state: FrameState): FrameState = {
+    //state.asInstanceOf[FrameRdd].sortByColumns(columnNamesAndAscending)
+    //强制类型转换
     (state: FrameRdd).sortByColumns(columnNamesAndAscending)
   }
 }

@@ -38,6 +38,7 @@ case class DropColumns(columns: Seq[String]) extends FrameTransform {
   override def work(state: FrameState): FrameState = {
     state.schema.validateColumnsExist(columns)
     require(state.schema.columnNamesExcept(columns).nonEmpty, "Cannot drop all columns, must leave at least one column")
+    //case class 强制类型转换
     (state: FrameRdd).selectColumns(state.schema.dropColumns(columns).columnNames)
   }
 }

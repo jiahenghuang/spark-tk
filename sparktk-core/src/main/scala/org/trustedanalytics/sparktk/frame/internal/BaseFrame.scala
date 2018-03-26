@@ -140,21 +140,21 @@ case class SchemaValidationReturn(validatedRdd: RDD[Row], validationReport: Vali
 trait FrameOperation extends Product {
   //def name: String
 }
-
+//Frame转换
 trait FrameTransform extends FrameOperation {
   def work(state: FrameState): FrameState
 }
 
 case class FrameTransformReturn[T](state: FrameState, result: T)
-
+//Frame转换后的结果
 trait FrameTransformWithResult[T] extends FrameOperation {
   def work(state: FrameState): FrameTransformReturn[T]
 }
-
+//Frame摘要汇总
 trait FrameSummarization[T] extends FrameOperation {
   def work(state: FrameState): T
 }
-
+//Frame创建
 trait FrameCreation extends FrameOperation {
   def work(): FrameState
 }

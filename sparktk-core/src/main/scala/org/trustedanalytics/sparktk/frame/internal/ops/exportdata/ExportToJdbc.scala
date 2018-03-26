@@ -27,7 +27,7 @@ trait ExportToJdbcSummarization extends BaseFrame {
    * Write current frame to JDBC table.
    * 将当前frame写入JDBC表
    * Table will be created or appended to.Export of Vectors is not currently supported.
-   * 表将被创建或附加到,目前不支持向量的导出
+   * 表将被创建或最加到,目前不支持向量的导出
    * @param connectionUrl JDBC connection url to database server
     *                      JDBC连接到数据库服务器的URL
    * @param tableName     JDBC table name JDBC表名

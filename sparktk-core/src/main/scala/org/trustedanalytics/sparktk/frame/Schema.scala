@@ -203,7 +203,7 @@ object SchemaHelper {
 
   val config = ConfigFactory.load(this.getClass.getClassLoader)
 
-  lazy val defaultInferSchemaSampleSize = config.getInt("frame.schema.infer-schema-sample-size")
+  lazy val defaultInferSchemaSampleSize = config.getInt("trustedanalytics.sparktk.frame.schema.infer-schema-sample-size")
 
   /**
    * Appends letter to the conflicting columns
@@ -351,18 +351,19 @@ object SchemaHelper {
     }
     else
       // Unable to merge types, default to use a string
+      //无法合并类型,默认使用字符串
       DataTypes.string
   }
-
+  //合并数据类型
   private def mergeTypes(dataTypesA: Vector[DataType], dataTypesB: Vector[DataType]): Vector[DataType] = {
     if (dataTypesA.length != dataTypesB.length)
       throw new RuntimeException(s"Rows are not the same length (${dataTypesA.length} and ${dataTypesB.length}).")
-
+    //zipWithIndex 返回对偶元组列表,第二个组成部分是元素下标
     dataTypesA.zipWithIndex.map {
       case (dataTypeA, index) => mergeType(dataTypeA, dataTypesB(index))
     }
   }
-
+  //推动数据类型
   private def inferDataTypes(row: Row): Vector[DataType] = {
     row.toSeq.map(value => {
       value match {

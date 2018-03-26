@@ -39,14 +39,14 @@ object FrameOrderingUtils extends Serializable {
 
   /**
    * Get sort order for Spark data frames
-   *获取Spark数据框的排序顺序
+   * 获取Spark数据框的排序顺序
    * @param columnNamesAndAscending column names to sort by, true for ascending, false for descending
-    *                                要排序的列名称,为升序为true,为降序为false
+    *                                排序列的名称,为升序为true,为降序为false
    * @return Sort order for data frames 对数据框排序
    */
   def getSortOrder(columnNamesAndAscending: List[(String, Boolean)]): Seq[SparkSqlColumn] = {
     require(columnNamesAndAscending != null && columnNamesAndAscending.nonEmpty, "one or more sort columns required")
-    columnNamesAndAscending.map {
+    val columnMap=columnNamesAndAscending.map {
       case (columnName, ascending) =>
         if (ascending) {
           asc(columnName)
@@ -55,6 +55,7 @@ object FrameOrderingUtils extends Serializable {
           desc(columnName)
         }
     }
+    columnMap
   }
 }
 

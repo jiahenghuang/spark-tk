@@ -22,7 +22,7 @@ import org.trustedanalytics.sparktk.frame.{ Frame, Column, DataTypes, FrameSchem
 import org.trustedanalytics.sparktk.testutils.TestingSparkContextWordSpec
 
 class AppendTest extends TestingSparkContextWordSpec with Matchers {
-  //框架追加
+  //frame追加
   "frame append" should {
     val rowsA: Array[Row] = Array(
       new GenericRow(Array[Any](1)),

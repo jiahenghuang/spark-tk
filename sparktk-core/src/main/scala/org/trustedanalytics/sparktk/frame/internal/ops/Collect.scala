@@ -40,6 +40,7 @@ case class Collect(columns: Option[Seq[String]]) extends FrameSummarization[scal
       case Some(cols) =>
         //columnIndices 根据列的名列检索索引的列表
         val indices = state.schema.columnIndices(cols)
+        //
         state.rdd.map(row => new GenericRow(indices.map(i => row(i)).toArray).asInstanceOf[Row]).collect()
     }
   }

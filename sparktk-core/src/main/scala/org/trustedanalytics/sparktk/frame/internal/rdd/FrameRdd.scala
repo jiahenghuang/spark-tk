@@ -173,7 +173,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
     * 将FrameRdd转换为RDD [（Long，Long，Double）]
    *
    * @param sourceColumnName Name of the frame's column storing the source id of the edge
-    *                         存储边的源ID的帧的列的名称
+    *                         存储边的源ID的frame的列的名称
    * @param destinationColumnName Name of the frame's column storing the destination id of the edge
     *                              存储边的目标ID的帧的列的名称
    * @param edgeSimilarityColumnName Name of the frame's column storing the similarity between the source and destination
@@ -197,7 +197,7 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
 
   /**
    * Spark map with a rowWrapper
-    * 用rowWrapper的Spark map
+    * 用rowWrapper的Spark map,
    */
   def mapRows[U: ClassTag](mapFunction: (RowWrapper) => U): RDD[U] = {
     this.map(sqlRow => {
@@ -303,6 +303,8 @@ class FrameRdd(val frameSchema: Schema, val prev: RDD[Row])
     val duplicatesRemovedRdd: RDD[Row] = this.mapRows(row => otherColumnNames match {
       case Nil => (row.values(columnNames), Nil)
       case _ => (row.values(columnNames), row.values(otherColumnNames.toVector))
+        //reduceByKey就是对元素为KV对的RDD中Key相同的元素的Value进行binary_function的reduce操作,
+      // 因此Key相同的多个元素的值被reduce为一个值,然后与原RDD中的Key组成一个新的KV对。
     }).reduceByKey((x, y) => x).map {
       case (keyRow, valueRow) =>
         valueRow match {

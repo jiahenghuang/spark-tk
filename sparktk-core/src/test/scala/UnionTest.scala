@@ -1,4 +1,7 @@
+import org.apache.commons.csv.CSVPrinter
 import org.apache.spark.sql.SparkSession
+
+import scala.collection.mutable.ArrayBuffer
 
 /**
   * create by liush on 2018-3-23
@@ -37,6 +40,23 @@ object UnionTest {
     ).toDF("package_name", "name", "user")
 
     //df1与df2合并，不去重。列名不同并不影响合并
+
+    df1.rdd.map(row => {
+      //==00==WrappedArray(com.eggpain.zhongguodashujuwang1457, 中国大数据, person2)
+      println("==00=="+row.toSeq)
+      val array = row.toSeq.map {
+        case null => ""
+        case arr: ArrayBuffer[_] => {
+          arr.mkString(",")
+        }
+        case seq: Seq[_] => {
+          seq.mkString(",")
+        }
+        case x => x.toString
+      }
+      //====ArrayBuffer(com.eggpain.zhongguodashujuwang1457, 中国大数据, person2)
+    println("===="+array)
+    }).collect()
 
     df1.unionAll(df2).show()
 

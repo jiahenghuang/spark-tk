@@ -20,7 +20,10 @@ import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.mllib.linalg.DenseMatrix
+import org.apache.spark.rdd.RDD
+import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.joda.time.{DateTime, DateTimeZone}
+import org.trustedanalytics.sparktk.frame.{Column, DataTypes, FrameSchema, Schema}
 
 import scala.collection.JavaConverters._
 //import scala.collection.mutable
@@ -85,14 +88,14 @@ object JConvert extends Serializable {
     seq.reduce(_ ++ _)
   }
 
-  //  def frameSchemaToScala(pythonSchema: JArrayList[JArrayList[String]]): FrameSchema = {
-  //    val columns = pythonSchema.asScala.map { item =>
-  //      val list = item.asScala.toList
-  //      require(list.length == 2, "Schema entries must be tuples of size 2 (name, dtype)")
-  //      Column(list.head, DataTypes.toDataType(list(1)))
-  //    }.toVector
-  //    FrameSchema(columns)
-  //  }
+ def frameSchemaToScala(pythonSchema: JArrayList[JArrayList[String]]): FrameSchema = {
+     val columns = pythonSchema.asScala.map { item =>
+     val list = item.asScala.toList
+    require(list.length == 2, "Schema entries must be tuples of size 2 (name, dtype)")
+      Column(list.head, DataTypes.toDataType(list(1)))
+    }.toVector
+    FrameSchema(columns)
+ }
   //
   //    def frameSchemaToPython(scalaSchema: FrameSchema): JArrayList[JArrayList[String]] = {
   //      val pythonSchema = new JArrayList[JArrayList[String]]()
@@ -166,25 +169,25 @@ object JConvert extends Serializable {
   //    SerDeUtil.toJavaArrayAny(j)
   //  }
   //
-  //  def toRowRdd(raa: RDD[Array[Any]], schema: Schema): RDD[org.apache.spark.sql.Row] = {
-  //    val rowRDD: RDD[org.apache.spark.sql.Row] = raa.map(row => {
-  //      val rowArray = new Array[Any](row.length)
-  //      row.zipWithIndex.map {
-  //        case (o, i) =>
-  //          o match {
-  //            case null => null
-  //            case _ =>
-  //              val colType = schema.column(i).dataType
-  //              try {
-  //                rowArray(i) = colType.parse(o).get
-  //              }
-  //              catch {
-  //                case e: Exception => null
-  //              }
-  //          }
-  //      }
-  //      new GenericRow(rowArray)
-  //    })
-  //    rowRDD
-  //  }
+   def toRowRdd(raa: RDD[Array[Any]], schema: Schema): RDD[org.apache.spark.sql.Row] = {
+      val rowRDD: RDD[org.apache.spark.sql.Row] = raa.map(row => {
+        val rowArray = new Array[Any](row.length)
+        row.zipWithIndex.map {
+          case (o, i) =>
+            o match {
+              case null => null
+              case _ =>
+                val colType = schema.column(i).dataType
+                try {
+                  rowArray(i) = colType.parse(o).get
+                }
+                catch {
+                  case e: Exception => null
+                }
+            }
+        }
+        new GenericRow(rowArray)
+      })
+      rowRDD
+    }
 }

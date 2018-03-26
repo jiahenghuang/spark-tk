@@ -52,9 +52,11 @@ object SaveLoad {
 
   /**
    * Stores the given zipfile (MAR) to either the HDFS or local file system
+    * 给定的压缩文件存储(损坏)或HDFS或本地文件系统
    * @param storagePath location to where the MAR file needs to be stored
-   * @param zipFile the MAR file to be stored
-   * @return full path to the location of the MAR file
+    *                    存放MAR文件的位置
+   * @param zipFile the MAR file to be stored 要存储的MAR文件
+   * @return full path to the location of the MAR file 到MAR文件位置的完整路径
    */
   def saveMar(storagePath: String, zipFile: File): String = {
     if (storagePath.startsWith("hdfs")) {
@@ -66,6 +68,7 @@ object SaveLoad {
       storagePath
     }
     else {
+      //本地文件
       val file = new File(storagePath)
       FileUtils.copyFile(zipFile, file)
       file.getCanonicalPath
@@ -75,9 +78,10 @@ object SaveLoad {
 
   /**
    * Loads data from a file into a json4s JValue and provides format identifier and version
+    * 加载数据从一个文件到一个json4s jvalue提供标识和版本格式
    * @param sc active spark context
-   * @param path the source path
-   * @return the payload from the load
+   * @param path the source path,源路径
+   * @return the payload from the load,负载中的有效载荷
    */
   def load(sc: SparkContext, path: String): LoadResult = {
     implicit val formats = DefaultFormats
@@ -90,6 +94,7 @@ object SaveLoad {
 
   /**
    * Helper method to extract/create the scala object from out of the JValue
+    * 辅助法提取/从JValue创建Scala对象
    * @param sourceJValue AST JValue representing T
    * @param t implicit reflection jazz
    * @tparam T the type to extract

@@ -26,7 +26,7 @@ trait CopySummarization extends BaseFrame {
    * 将指定的列复制到一个新的Frame对象中,可以重命名和/或过滤它们。
    * @param columns Optional dictionary of column names to include in the copy and target names.  The default
    *                behavior is that all columns will be included in the frame that is returned.
-    *               包含在复制和目标名称中的列名称的可选字典,默认行为是所有列将被包含在返回的框架中。
+    *               包含在复制和目标名称中的列名称的可选字典,默认行为是所有列将被包含在返回的框架中
    * @param where Optional function to filter the rows that are included.  The default behavior is that
    *              all rows will be included in the frame that is returned.
     *              可选函数过滤所包含的行,默认行为是所有的行将被包含在返回的框架中
@@ -49,7 +49,7 @@ case class Copy(columns: Option[Map[String, String]] = None,
     }
     //过滤条件
     var filteredRdd = if (where.isDefined) state.rdd.filter(where.get) else state.rdd
-  // //如果可选值是 Some 的实例返回 true,否则返回 false
+    //如果可选值是 Some 的实例返回 true,否则返回 false
     if (columns.isDefined) {
       val frameRdd = new FrameRdd(state.schema, filteredRdd)
       filteredRdd = frameRdd.selectColumnsWithRename(columns.get)

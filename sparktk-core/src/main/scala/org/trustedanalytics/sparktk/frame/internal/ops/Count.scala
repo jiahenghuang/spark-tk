@@ -30,7 +30,7 @@ trait CountSummarization extends BaseFrame {
     execute(Count(whereFunction))
   }
 }
-
+  //Frame摘要汇总
 case class Count(whereFunction: Row => Boolean) extends FrameSummarization[Long] {
   require(whereFunction != null, "where predicate is required")
   override def work(state: FrameState): Long = {
