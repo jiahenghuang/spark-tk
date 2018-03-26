@@ -20,6 +20,9 @@ import org.trustedanalytics.sparktk.frame._
 import org.trustedanalytics.sparktk.frame.internal._
 import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
 
+/**
+  * 添加列转换
+  */
 trait AddColumnsTransform extends BaseFrame {
   /**
    * Adds columns to frame according to row function (UDF)

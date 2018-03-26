@@ -64,13 +64,13 @@ case class TimeSeriesFromObseravations(dateTimeIndex: List[DateTime],
     // Create DataFrame with a new column that's formatted as a Timestamp (because this is what timeSeriesRDDFromObservations requires)
     val newTimestampColumn = timestampColumn + "_as_timestamp" // name for the new timestamp formatted column
     val dataFrame = (state: FrameRdd).toDataFrame
-    val dataFrameWithTimestamp = dataFrame.withColumn(newTimestampColumn, TimeSeriesFunctions.toTimestamp(dataFrame(timestampColumn)))
+   // val dataFrameWithTimestamp = dataFrame.withColumn(newTimestampColumn, TimeSeriesFunctions.toTimestamp(dataFrame(timestampColumn)))
 
     // Convert the frame of observations to a TimeSeriesRDD
-    val timeseriesRdd = TimeSeriesRDD.timeSeriesRDDFromObservations(dates, dataFrameWithTimestamp, newTimestampColumn, keyColumn, valueColumn)
+  //  val timeseriesRdd = TimeSeriesRDD.timeSeriesRDDFromObservations(dates, dataFrameWithTimestamp, newTimestampColumn, keyColumn, valueColumn)
 
     // Convert back to a frame to return
-    TimeSeriesFunctions.createFrameFromTimeSeries(timeseriesRdd, keyColumn, valueColumn)
+   // TimeSeriesFunctions.createFrameFromTimeSeries(timeseriesRdd, keyColumn, valueColumn)
   }
 
 }

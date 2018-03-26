@@ -1,0 +1,115 @@
+
+description = ''
+dependencies {
+
+    compile "org.scala-lang:scala-library:"+scalaVersion
+    compile "org.scala-lang:scala-reflect:"+scalaVersion
+    compile "org.scala-lang:scala-compiler:"+scalaVersion
+    compile 'org.apache.spark:spark-mllib_2.11:2.2.0'
+    compile 'org.apache.spark:spark-sql_2.11:2.2.0'
+    compile 'org.apache.spark:spark-streaming-flume-assembly_2.11:2.2.0'
+    compile 'org.apache.spark:spark-graphx_2.11:2.2.0'
+    compile 'org.apache.spark:spark-launcher_2.11:2.2.0'
+    compile 'org.apache.spark:spark-catalyst_2.11:2.2.0'
+    compile 'org.apache.spark:spark-streaming_2.11:2.2.0'
+    compile 'org.apache.spark:spark-core_2.11:2.2.0'
+    // https://mvnrepository.com/artifact/org.apache.spark/spark-sql-kafka-0-10
+    compile group: 'org.apache.spark', name: 'spark-sql-kafka-0-10_2.11', version: '2.2.0'
+// https://mvnrepository.com/artifact/org.apache.kafka/kafka-clients
+    compile group: 'org.apache.kafka', name: 'kafka-clients', version: '0.11.0.1'
+
+    // https://mvnrepository.com/artifact/org.scalatest/scalatest
+    compile group: 'org.scalatest', name: 'scalatest_2.11', version: '3.0.1'
+// https://mvnrepository.com/artifact/junit/junit
+    compile group: 'junit', name: 'junit', version: '4.10'
+// https://mvnrepository.com/artifact/mysql/mysql-connector-java
+// https://mvnrepository.com/artifact/commons-dbcp/commons-dbcp
+    compile group: 'commons-dbcp', name: 'commons-dbcp', version: '1.4'
+    // https://mvnrepository.com/artifact/mysql/mysql-connector-java
+    compile group: 'mysql', name: 'mysql-connector-java', version: '5.1.41'
+    compile group: 'org.trustedanalytics', name: 'model-archive-format', version:'0.1.1'
+    compile group: 'org.trustedanalytics', name: 'model-archive-interfaces', version:'0.1.1'
+    compile group: 'org.dcm4che', name: 'dcm4che-core', version:'3.3.7'
+    compile group: 'org.dcm4che', name: 'dcm4che-imageio', version:'3.3.7'
+    compile group: 'org.dcm4che.tool', name: 'dcm4che-tool-dcm2xml', version:'3.3.7'
+    compile group: 'org.dcm4che.tool', name: 'dcm4che-tool-xml2dcm', version:'3.3.7'
+    compile group: 'org.dcm4che', name: 'dcm4che-image', version:'3.3.7'
+
+    compile(group: 'org.apache.spark', name: 'spark-mllib_2.11', version:'2.2.0') {
+        exclude(module: 'servlet-api')
+        exclude(module: 'servlet-api-2.5')
+        exclude(module: 'jaxb-impl')
+        exclude(module: '*')
+    }
+
+    compile group: 'com.orientechnologies', name: 'orientdb-graphdb', version:'2.1.16'
+    compile group: 'com.orientechnologies', name: 'orientdb-core', version:'2.1.16'
+    compile group: 'com.orientechnologies', name: 'orientdb-client', version:'2.1.16'
+    compile group: 'com.orientechnologies', name: 'orientdb-enterprise', version:'2.1.16'
+    compile group: 'com.tinkerpop.blueprints', name: 'blueprints-core', version:'2.6.0'
+    compile group: 'com.typesafe', name: 'config', version:'1.2.1'
+    compile group: 'io.spray', name: 'spray-json_2.10', version:'1.2.6'
+    compile group: 'log4j', name: 'log4j', version:'1.2.17'
+    compile group: 'org.slf4j', name: 'slf4j-api', version:'1.7.10'
+    compile group: 'org.slf4j', name: 'slf4j-log4j12', version:'1.7.10'
+    compile group: 'org.tensorflow', name: 'tensorflow-hadoop', version:'1.0-01232017-SNAPSHOT', classifier:'shaded-protobuf'
+    compile group: 'com.google.guava', name: 'guava', version:'14.0.1'
+    compile group: 'com.googlecode.concurrentlinkedhashmap', name: 'concurrentlinkedhashmap-lru', version:'1.4.1'
+    compile(group: 'org.apache.spark', name: 'spark-core_2.11', version:'2.2.0') {
+            exclude(module: 'objenesis')
+            exclude(module: 'servlet-api')
+            exclude(module: 'commons-beanutils-core')
+            exclude(module: 'commons-collections')
+            exclude(module: 'minlog')
+            exclude(module: 'slf4j-log4j12')
+            exclude(module: 'logback-classic')
+            exclude(module: 'asm')
+            exclude(module: 'org.apache.mesos')
+    }
+    compile group: 'org.apache.spark', name: 'spark-yarn_2.11', version:'2.2.0'
+    compile(group: 'org.apache.spark', name: 'spark-sql_2.10', version:'2.2.0') {
+            exclude(module: 'scalalogging-slf4j_2.10')
+            exclude(module: 'spark-core_2.10')
+            exclude(module: 'scala-reflect')
+            exclude(module: 'scala_check_2.10')
+            exclude(module: 'scalatest_2.10')
+    }
+    compile group: 'org.apache.commons', name: 'commons-csv', version:'1.0'
+    compile group: 'org.parboiled', name: 'parboiled-scala_2.11', version:'1.1.6'
+    compile group: 'org.parboiled', name: 'parboiled-core', version:'1.1.6'
+    compile group: 'org.threeten', name: 'threeten-extra', version:'0.9'
+    compile group: 'org.scala-lang', name: 'scala-library', version:'2.10.5'
+    compile group: 'tw.edu.ntu.csie', name: 'libsvm', version:'3.17'
+    compile group: 'org.apache.spark', name: 'spark-hive_2.11', version:'2.2.0'
+    compile group: 'org.apache.spark', name: 'spark-network-shuffle_2.10', version:'1.2.0'
+
+    compile group: 'com.databricks', name: 'spark-csv_2.11', version:'1.4.0'
+    compile group: 'org.apache.spark', name: 'spark-launcher_2.11', version:'2.2.0'
+    compile(group: 'com.cloudera.sparkts', name: 'sparkts', version:'0.3.5') {
+        exclude(module: 'breeze_2.10')
+    }
+    compile group: 'org.apache.maven', name: 'maven-artifact', version:'3.3.9'
+    compileOnly(group: 'org.apache.hadoop', name: 'hadoop-common', version:'2.6.0') {
+        exclude(module: 'asm')
+        exclude(module: 'slf4j-log4j12')
+        exclude(module: 'servlet-api')
+        exclude(module: 'servlet-api-2.5')
+    }
+    compileOnly(group: 'org.apache.hbase', name: 'hbase-client', version:'1.2.0') {
+        exclude(module: 'slf4j-log4j12')
+    }
+    compileOnly(group: 'org.apache.hbase', name: 'hbase-server', version:'1.2.0') {
+            exclude(module: 'hadoop-core')
+            exclude(module: 'commons-logging')
+            exclude(module: 'activation')
+            exclude(module: 'servlet-api')
+            exclude(module: 'servlet-api-2.5')
+            exclude(module: 'jsp-api')
+            exclude(module: 'jsp-2.1')
+            exclude(module: 'jsp-api-2.1')
+            exclude(module: 'protobuf-java')
+            exclude(module: 'slf4j-log4j12')
+    }
+    compileOnly group: 'joda-time', name: 'joda-time', version:'2.5'
+    compileOnly group: 'org.joda', name: 'joda-convert', version:'1.7'
+}

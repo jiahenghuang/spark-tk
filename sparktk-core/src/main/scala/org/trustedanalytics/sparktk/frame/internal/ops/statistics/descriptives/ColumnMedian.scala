@@ -52,6 +52,7 @@ case class ColumnMedian(dataColumn: String, weightsColumn: Option[String]) exten
     val valueDataType = state.schema.columnDataType(dataColumn)
 
     // run the operation and return results
+    //运行操作并返回结果
     val weightsColumnIndexAndType: Option[(Int, DataType)] = weightsColumn match {
       case None =>
         None
@@ -71,11 +72,12 @@ case class ColumnMedian(dataColumn: String, weightsColumn: Option[String]) exten
 
 /**
  * The median value of the (possibly weighted) column. None when the sum of the weights is 0.
- *
+ * (可能是加权的)列的中值值,当权重的总和为0时没有。
  * If no weights are provided, all elements receive a uniform weight of 1.
- *
+ * 如果不提供权重,则所有元素的统一权重为1
  * If any element receives a weight that is NaN, infinite or <= 0, that element is thrown
  * out of the calculation.
+  * 如果任何元素接收到一个权重,该值为m、无穷或< = 0,则抛出该元素。
  * @param value The median. None if the net weight of the column is 0.
  */
 case class ColumnMedianReturn(value: Any)

@@ -41,14 +41,15 @@ trait CopySummarization extends BaseFrame {
 case class Copy(columns: Option[Map[String, String]] = None,
                 where: Option[Row => Boolean]) extends FrameSummarization[Frame] {
   override def work(state: FrameState): Frame = {
-
+    //如果可选值是 Some 的实例返回 true,否则返回 false
     val finalSchema = columns.isDefined match {
+        //从该模式生成重命名的子集模式
       case true => state.schema.copySubsetWithRename(columns.get)
       case false => state.schema
     }
-
+    //过滤条件
     var filteredRdd = if (where.isDefined) state.rdd.filter(where.get) else state.rdd
-
+  // //如果可选值是 Some 的实例返回 true,否则返回 false
     if (columns.isDefined) {
       val frameRdd = new FrameRdd(state.schema, filteredRdd)
       filteredRdd = frameRdd.selectColumnsWithRename(columns.get)

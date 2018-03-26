@@ -16,19 +16,19 @@
 package org.trustedanalytics.sparktk.frame.internal
 
 import org.apache.spark.rdd.RDD
-import org.apache.spark.sql.{ SQLContext, DataFrame, Row }
-
+import org.apache.spark.sql.{DataFrame, Row, SQLContext}
+import org.apache.spark.util.{DoubleAccumulator, LongAccumulator}
 import org.slf4j.LoggerFactory
 import org.trustedanalytics.sparktk.frame.Schema
 import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
 
-import scala.util.{ Failure, Success }
+import scala.util.{Failure, Success}
 
 trait BaseFrame {
 
   private var frameState: FrameState = null
 
-  lazy val logger = LoggerFactory.getLogger("sparktk")
+  lazy val logger = LoggerFactory.getLogger(this.getClass)
 
   /**
    * The content of the frame as an RDD of Rows.
@@ -56,18 +56,20 @@ trait BaseFrame {
    * Validates the data against the specified schema. Attempts to parse the data to the column's data type.  If
    * it's unable to parse the data to the specified data type, it's replaced with null.
     *
-   * 根据指定的模式验证数据,尝试将数据解析为列的数据类型,如果无法将数据解析为指定的数据类型,则将其替换为null。
+   * 根据指定的schema验证数据,尝试将数据解析为列的数据类型,如果无法将数据解析为指定的数据类型,则将其替换为null。
     *
    * @param rddToValidate RDD of data to validate against the specified schema
     *                      数据的RDD根据指定的模式进行验证
-   * @param schemaToValidate Schema to use to validate the data 架构来验证数据
+   * @param schemaToValidate Schema to use to validate the data Schema来验证数据
    * @return RDD that has data parsed to the schema's data types 将数据解析为模式数据类型的RDD
    */
   protected def validateSchema(rddToValidate: RDD[Row], schemaToValidate: Schema): SchemaValidationReturn = {
+    //获得总列数
     val columnCount = schemaToValidate.columns.length
+    //zipWithIndex,返回对偶列表的元组,第二个组成部分是元素下标
     val schemaWithIndex = schemaToValidate.columns.zipWithIndex
-
-    val badValueCount = rddToValidate.sparkContext.accumulator(0, "Frame bad values")
+    //定义广播变量
+    val badValueCount=new LongAccumulator()
 
     val validatedRdd = rddToValidate.map(row => {
       if (row.length != columnCount)
@@ -75,10 +77,11 @@ trait BaseFrame {
 
       val parsedValues = schemaWithIndex.map {
         case (column, index) =>
+          //根据Schema字段解析数据
           column.dataType.parse(row.get(index)) match {
             case Success(value) => value
             case Failure(e) =>
-              badValueCount += 1
+              badValueCount.add(1)
               null
           }
       }
@@ -89,8 +92,7 @@ trait BaseFrame {
     // Call count() to force rdd map to execute so that we can get the badValueCount from the accumulator.
     //调用count()来强制执行rdd映射,以便我们可以从accumulator中获取badValueCount
     validatedRdd.count()
-
-    SchemaValidationReturn(validatedRdd, ValidationReport(badValueCount.value))
+    SchemaValidationReturn(validatedRdd, ValidationReport(badValueCount.sum))
   }
 
   private[sparktk] def init(rdd: RDD[Row], schema: Schema): Unit = {
@@ -122,16 +124,16 @@ trait BaseFrame {
  * @param numBadValues The number of values that were unable to be parsed to the column's data type.
   *                     无法解析为列的数据类型的值的数量
  */
-case class ValidationReport(numBadValues: Int)
+case class ValidationReport(numBadValues: Long)
 
 /**
  * Value to return from the function that validates the data against schema.
- * 从验证数据的模式返回的值返回值
+ * 从验证数据的模式返回的值
  * @param validatedRdd RDD of data has been casted to the data types specified by the schema.
   *                     数据的RDD已经被转换成模式指定的数据类型
  * @param validationReport Validation report specifying how many values were unable to be parsed to the column's
  *                         data type.
-  *                         验证报告指定有多少个值无法被解析为列的数据类型
+  *                         验证指定有多少个值无法被解析指定的数据类型的列
  */
 case class SchemaValidationReturn(validatedRdd: RDD[Row], validationReport: ValidationReport)
 

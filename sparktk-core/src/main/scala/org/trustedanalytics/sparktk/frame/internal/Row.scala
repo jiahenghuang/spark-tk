@@ -14,21 +14,21 @@
  *  limitations under the License.
  */
 package org.trustedanalytics.sparktk.frame.internal
-import org.apache.spark.mllib.linalg.{ Vector => MllibVector, Vectors, DenseVector }
+import org.apache.spark.mllib.linalg.{Vectors, Vector => MllibVector}
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.InternalRow
 import org.apache.spark.sql.catalyst.expressions.GenericRow
-import org.apache.spark.sql.types.GenericArrayData
+import org.apache.spark.sql.catalyst.util.GenericArrayData
 import org.trustedanalytics.sparktk.frame.DataTypes.DataType
 import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
-import org.trustedanalytics.sparktk.frame.{ DataTypes, Schema }
+import org.trustedanalytics.sparktk.frame.{DataTypes, Schema}
 
 import scala.collection.mutable.ArrayBuffer
-import scala.xml.{ XML, NodeSeq }
+import scala.xml.{NodeSeq, XML}
 
 /**
  * This class wraps raw row data adding schema information - this allows for a richer easier to use API.
- * 这个类包装原始行数据添加模式信息 - 这使得更容易使用API更丰富。
+ * 这个类包装原始行数据添加schema信息 - 这使得更容易使用API更丰富,
  * Ideally, every row knows about its schema but this is inefficient when there are many rows.  As an
  * alternative, a single instance of this wrapper can be used to provide the same kind of API.
  * 理想情况下,每行都知道它的模式,但是当有很多行时,这是低效的,作为替代方案,可以使用此包装的单个实例来提供相同类型的API
@@ -54,6 +54,9 @@ class RowWrapper(override val schema: Schema) extends AbstractRow with Serializa
   }
 
   def apply(internalRow: InternalRow) = {
+    //Row用Seq[Any]来表示values，GenericRow是Row的子类,用数组表示values。
+    //Row支持数据类型包括Int, Long, Double, Float, Boolean, Short, Byte, String,
+    //支持按序数(ordinal)读取某一个列的值,读取前需要做isNullAt(i: Int)的判断
     this.row = new GenericRow(internalRow.toSeq(structType).toArray)
     this
   }
@@ -87,7 +90,7 @@ trait AbstractRow {
 
   /**
    * Get property
-   * 获取属性
+   * 获取属性的值
    * @param columnName name of the property
    * @return property value
    */
@@ -97,7 +100,7 @@ trait AbstractRow {
    * Get more than one value as a List
    * 获取多个值作为列表
    * @param columnNames the columns to get values for
-   * @return the values for the columns
+   * @return the values for the columns 列的值
    */
   def values(columnNames: Seq[String] = schema.columnNames): Seq[Any] = {
     columnNames.map(columnName => value(columnName))
@@ -137,7 +140,7 @@ trait AbstractRow {
 
   /**
    * Get property of double data type
-   *获取双数据类型的属性
+   * 获取double数据类型的属性的值
    * @param columnName name of the property
    * @return property value
    */
@@ -153,7 +156,7 @@ trait AbstractRow {
 
   /**
    * Get property of string data type
-   *获取字符串数据类型的属性
+   * 获取字符串数据类型的属性
    * @param columnName name of the property
    * @return property value
    */
@@ -167,8 +170,8 @@ trait AbstractRow {
   /**
    * Get the row as NodeSeq
    * 获取该行作为NodeSeq
-   * @param columnName Column name in frame holding xml string
-   * @param nodeName Name of the node to extract from column holding xml string
+   * @param columnName Column name in frame holding xml string 列中的列名称保存xml字符串
+   * @param nodeName Name of the node to extract from column holding xml string 从保存xml字符串的列中提取节点的名称
    * @return NodeSeq (i.e Seq[Node])
    */
   def xmlNodeSeqValue(columnName: String, nodeName: String): NodeSeq = {
@@ -315,7 +318,7 @@ trait AbstractRow {
    * Select several property values from their names
    *从他们的名字中选择几个属性值
    * @param names the names of the properties to put into an array
-   * @param flattenInputs If true, flatten vector data types
+   * @param flattenInputs If true, flatten vector data types 如果为true,则展开向量数据类型
    * @return values for the supplied properties
    */
   def valuesAsArray(names: Seq[String] = schema.columnNames, flattenInputs: Boolean = false): Array[Any] = {
@@ -323,6 +326,8 @@ trait AbstractRow {
 
     schema.columnIndices(names).map(i => {
       schema.column(i).dataType match {
+          //变长数组追加++=
+          //+=
         case DataTypes.vector(length) => if (flattenInputs) arrayBuf ++= DataTypes.toVector(length)(row(i)) else arrayBuf += row(i)
         case _ => arrayBuf += row(i)
       }
@@ -335,8 +340,8 @@ trait AbstractRow {
    * Select several property values from their names as an array of doubles
    * 从名称中选择几个属性值作为双精度数组
    * @param names the names of the properties to put into an array
-   * @param flattenInputs If true, flatten vector data types
-   * @return array of doubles with values for the supplied properties
+   * @param flattenInputs If true, flatten vector data types 压扁向量数据类型
+   * @return array of doubles with values for the supplied properties 所提供属性值的双精度数组
    */
   def valuesAsDoubleArray(names: Seq[String] = schema.columnNames, flattenInputs: Boolean = false): Array[Double] = {
     valuesAsArray(names, flattenInputs).map(value => DataTypes.toDouble(value))
@@ -352,11 +357,12 @@ trait AbstractRow {
 
   /**
    * Values of the row as an Array[Any]
+    * 该行作为数组的值[任意]
    */
   def toArray: Array[Any] = {
     row.toSeq.toArray
   }
-
+  //转换成稠密向量
   def toDenseVector(featureColumnNames: Seq[String]): MllibVector = {
     Vectors.dense(valuesAsDoubleArray(featureColumnNames))
   }
@@ -371,8 +377,8 @@ trait AbstractRow {
    * Create a new row matching the supplied schema adding/dropping columns as needed.
     * 根据需要创建与提供的模式添加/删除列匹配的新行
    *
-   * @param updatedSchema the new schema to match
-   * @return the row matching the new schema
+   * @param updatedSchema the new schema to match 要匹配的新模式
+   * @return the row matching the new schema 新模式匹配的行
    */
   def valuesForSchema(updatedSchema: Schema): Row = {
     val content = new Array[Any](updatedSchema.columns.length)
@@ -390,6 +396,7 @@ trait AbstractRow {
       }
       else {
         // it is non-intuitive but even primitives can be null with Rows
+        //它是非直观的,但即使原始数据对于行也可以为空
         content(updatedSchema.columnIndex(columnName)) = null
       }
     }

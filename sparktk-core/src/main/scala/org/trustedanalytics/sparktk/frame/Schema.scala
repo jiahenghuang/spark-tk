@@ -43,8 +43,8 @@ object Column {
   /**
    * Create Column given column name and scala type
    * 创建列给定列名称和Scala类型
-   * @param name Column name
-   * @param dtype runtime type (using scala reflection)
+   * @param name Column name 列名称
+   * @param dtype runtime type (using scala reflection) 运行时类型(使用scala反射)
    * @return Column
    */
   def apply(name: String, dtype: reflect.runtime.universe.Type): Column = {
@@ -55,6 +55,7 @@ object Column {
 
     Column(name,
       dtype match {
+          //这种类型是否符合给定的类型参数`that`？
         case t if t <:< definitions.IntTpe => DataTypes.int32
         case t if t <:< definitions.LongTpe => DataTypes.int64
         case t if t <:< definitions.FloatTpe => DataTypes.float32
@@ -68,9 +69,11 @@ object Column {
    * 检查列名是否有效
    * @param str Column name
    * @return Boolean indicating if the column name was valid
+    *         布尔值,指示列名是否有效
    */
   def isValidColumnName(str: String): Boolean = {
     for (c <- str.iterator) {
+      //用于char时,其代表ascii码值0x20,即字符空格' '
       if (c <= 0x20)
         return false
     }
@@ -172,8 +175,9 @@ object Column {
 
 /**
  * Schema for a data frame. Contains the columns with names and data types.
+  * 数据框的Schema,包含具有名称和数据类型的列
  *
- * @param columns the columns in the data frame
+ * @param columns the columns in the data frame 数据框中的列
  */
 case class FrameSchema(columns: Seq[Column] = Vector[Column]()) extends Schema {
 
@@ -199,14 +203,14 @@ object SchemaHelper {
 
   val config = ConfigFactory.load(this.getClass.getClassLoader)
 
-  lazy val defaultInferSchemaSampleSize = config.getInt("trustedanalytics.sparktk.frame.schema.infer-schema-sample-size")
+  lazy val defaultInferSchemaSampleSize = config.getInt("frame.schema.infer-schema-sample-size")
 
   /**
    * Appends letter to the conflicting columns
-    * 将信附加到冲突的列
+    * 将追加到冲突的列
    *
-   * @param left list to which letter needs to be appended
-   * @param right list of columns which might conflict with the left list
+   * @param left list to which letter needs to be appended,需要附加哪个字母的列表
+   * @param right list of columns which might conflict with the left list,可能与左侧列表冲突的列表列表
    * @param appendLetter letter to be appended
    * @return Renamed list of columns
    */
@@ -377,14 +381,14 @@ object SchemaHelper {
 
   /**
    * Looks at the first x number of rows (depending on the sampleSize) to determine the schema of the data set.
-   * 查看前x行(取决于样本大小)来确定数据集的模式
+   * 查看前1行(取决于样本大小)来确定数据集的schema模式
    * @param data RDD of data
    * @return Schema inferred from the data
    */
   def inferSchema(data: RDD[Row], sampleSize: Option[Int] = None, columnNames: Option[List[String]] = None): Schema = {
 
     val sampleSet = data.take(math.min(data.count.toInt, sampleSize.getOrElse(defaultInferSchemaSampleSize)))
-
+    //foldLeft是从左开始计算,然后往右遍历,初始化参数和返回值的参数类型必须相同。
     val dataTypes = sampleSet.foldLeft(inferDataTypes(sampleSet.head)) {
       case (v: Vector[DataType], r: Row) => mergeTypes(v, inferDataTypes(r))
     }
@@ -425,24 +429,25 @@ object SchemaHelper {
 trait Schema {
 
   val columns: Seq[Column]
-
+  //列不能为空
   require(columns != null, "columns must not be null")
   require({
     val distinct = columns.map(_.name).distinct
     distinct.length == columns.length
+    //无效的模式,列名不能重复
   }, s"invalid schema, column names cannot be duplicated: $columns")
-
+  //列名的名称索引
   private lazy val namesToIndices: Map[String, Int] = (for ((col, i) <- columns.zipWithIndex) yield (col.name, i)).toMap
 
   def copy(columns: Seq[Column]): Schema
-
+  //获得所有列的名称
   def columnNames: Seq[String] = {
     columns.map(col => col.name)
   }
 
   /**
    * True if this schema contains the supplied columnName
-    * 如果此架构包含提供的columnName,则为true
+    * 如果schema包含提供的列名columnName,则为true
    */
   def hasColumn(columnName: String): Boolean = {
     namesToIndices.contains(columnName)
@@ -450,18 +455,22 @@ trait Schema {
 
   /**
    * True if this schema contains all of the supplied columnNames
+    * 如果此架构schema包含所有提供的columnNames,则为true
    */
-  //  def hasColumns(columnNames: Seq[String]): Boolean = {
-  //    columnNames.forall(hasColumn)
-  //  }
+  def hasColumns(columnNames: Seq[String]): Boolean = {
+    //forall测试列表中所有元素的谓词是否成立
+    columnNames.forall(hasColumn)
+   }
 
+  //如果此架构包含所有提供的columnNames,则为true
   def hasColumns(columnNames: Iterable[String]): Boolean = {
+    //forall测试列表中所有元素的谓词是否成立
     columnNames.forall(hasColumn)
   }
 
   /**
    * True if this schema contains the supplied columnName with the given dataType
-    * 如果此架构包含提供的具有给定数据类型的columnName,则为true
+    * 如果此schema包含给定数据类型和列名columnName,则为true
    */
   def hasColumnWithType(columnName: String, dataType: DataType): Boolean = {
     hasColumn(columnName) && column(columnName).dataType.equalsDataType(dataType)
@@ -470,7 +479,7 @@ trait Schema {
   /**
    * Validate that the list of column names provided exist in this schema
    * throwing an exception if any does not exist.
-    * 验证此架构中提供的列名列表是否存在引发异常(如果有)
+    * 验证此schema中提供的列名列表是否存在引发异常(如果有)
    */
   def validateColumnsExist(columnNames: Iterable[String]): Iterable[String] = {
     columnIndices(columnNames.toSeq)
@@ -506,8 +515,9 @@ trait Schema {
     val colDataType = columnDataType(columnName)
     require(dataTypeChecker(colDataType), s"column $columnName has bad type $colDataType")
   }
-
+  //列为是否数值类型
   def requireColumnIsNumerical(columnName: String): Unit = {
+    //获得列的类型
     val colDataType = columnDataType(columnName)
     require(colDataType.isNumerical, s"Column $columnName was not numerical. Expected a numerical data type, but got $colDataType.")
   }
@@ -515,11 +525,13 @@ trait Schema {
   /**
    * Either single column name that is a vector or a list of columns that are numeric primitives
    * that can be converted to a vector.
-   * 可以是向量的单列名称,也可以是可以转换为向量的数字基元列的列表。
+   * 可以是向量的单列名称,也可以转换为向量的原始数字列的列表
    * List cannot be empty
    */
   def requireColumnsAreVectorizable(columnNames: Seq[String]): Unit = {
+    //单个矢量列或需要一个或多个数字列
     require(columnNames.nonEmpty, "single vector column, or one or more numeric columns required")
+    //数据列名称不能为空
     columnNames.foreach { c => require(CommonsStringUtils.isNotEmpty(c), "data columns names cannot be empty") }
     if (columnNames.size > 1) {
       requireColumnsOfNumericPrimitives(columnNames)
@@ -538,7 +550,7 @@ trait Schema {
   def columnNamesAsString: String = {
     columnNames.mkString(", ")
   }
-
+  //
   override def toString: String = columns.mkString(", ")
 
   // TODO: add a rename column method, since renaming columns shows up in Edge and Vertex schema it is more complicated
@@ -552,6 +564,7 @@ trait Schema {
    * @param columnName name of the column to find index
    */
   def columnIndex(columnName: String): Int = {
+    //返回当前序列中第一个满足p条件的元素的索引,指定从from索引处开始
     val index = columns.indexWhere(column => column.name == columnName, 0)
     if (index == -1)
       throw new IllegalArgumentException(s"Invalid column name $columnName provided, please choose from: " + columnNamesAsString)
@@ -561,11 +574,12 @@ trait Schema {
 
   /**
    * Retrieve list of column index based on column names
-   * 根据列名检索列索引列表
-   * @param columnNames input column names
+   * 根据列的名列检索索引的列表
+   * @param columnNames input column names 输入列名称
    */
   def columnIndices(columnNames: Seq[String]): Seq[Int] = {
     if (columnNames.isEmpty)
+      //indices返回当前序列索引集合
       columns.indices.toList
     else {
       columnNames.map(columnName => columnIndex(columnName))
@@ -575,11 +589,12 @@ trait Schema {
   /**
    * Copy a subset of columns into a new Schema
    * 将列的一个子集复制到一个新的Schema中
-   * @param columnNames the columns to keep
+   * @param columnNames the columns to keep 要保留的列
    * @return the new Schema
    */
   def copySubset(columnNames: Seq[String]): Schema = {
     val indices = columnIndices(columnNames)
+    //列的子集
     val columnSubset = indices.map(i => columns(i)).toVector
     copy(columnSubset)
   }
@@ -587,36 +602,38 @@ trait Schema {
   /**
    * Produces a renamed subset schema from this schema
    * 从该模式生成重命名的子集模式
-   * @param columnNamesWithRename rename mapping
+   * @param columnNamesWithRename rename mapping 重名称的Map
    * @return new schema
    */
   def copySubsetWithRename(columnNamesWithRename: Map[String, String]): Schema = {
+    //保存的顺序的列的名称
     val preservedOrderColumnNames = columnNames.filter(name => columnNamesWithRename.contains(name))
     copySubset(preservedOrderColumnNames).renameColumns(columnNamesWithRename)
   }
 
   /**
    * Union schemas together, keeping as much info as possible.
-   * 联合架构在一起,保持尽可能多的信息
+   * 联合schemas在一起,保持尽可能多的信息
    * Vertex and/or Edge schema information will be maintained for this schema only
    * 顶点和/或边缘模式信息将仅针对该模式维护
    * Column type conflicts will cause error
     * 列类型冲突将导致错误
    */
   def union(schema: Schema): Schema = {
-    // check for conflicts 检查冲突
+    // check for conflicts 检查冲突列
     val newColumns: Seq[Column] = schema.columns.filterNot(c => {
       hasColumn(c.name) && {
         require(hasColumnWithType(c.name, c.dataType), s"columns with same name ${c.name} didn't have matching types"); true
       }
     })
+    //
     val combinedColumns = this.columns ++ newColumns
     copy(combinedColumns)
   }
 
   /**
    * get column datatype by column name
-   * 按列名称获取列数据类型
+   * 给列名称获取列的数据类型
    * @param columnName name of the column
    */
   def columnDataType(columnName: String): DataType = {
@@ -626,8 +643,8 @@ trait Schema {
   /**
    * Get all of the info about a column - this is a nicer wrapper than tuples
    * 获取关于列的所有信息 - 这是比元组更好的包装
-   * @param columnName the name of the column
-   * @return complete column info
+   * @param columnName the name of the column 列的名称
+   * @return complete column info 完整的列信息
    */
   def column(columnName: String): Column = {
     val i = namesToIndices.getOrElse(columnName, throw new IllegalArgumentException(s"No column named $columnName choose between: $columnNamesAsString"))
@@ -641,7 +658,7 @@ trait Schema {
     * 这对于为用户指定columnName是可选的时很有用
    *
    * @param columnName the name of the column
-   * @return complete column info, if a name was provided
+   * @return complete column info, if a name was provided 填写列信息,如果提供了名称
    */
   def column(columnName: Option[String]): Option[Column] = {
     columnName match {
@@ -656,27 +673,34 @@ trait Schema {
    * List can be empty.
    */
   def columns(columnNames: Iterable[String]): Iterable[Column] = {
+    //column获取关于列的所有信息 - 这是比元组更好的包装
     columnNames.map(column)
   }
 
   /**
    * Validates a Map argument used for renaming schema, throwing exceptions for violations
-   * 验证用于重命名模式的Map参数,抛出违规的异常
+   * 验证重命名模式的Map参数,违规的抛出异常
    * @param names victimName -> newName
    */
   def validateRenameMapping(names: Map[String, String], forCopy: Boolean = false): Unit = {
     if (names.isEmpty)
       throw new IllegalArgumentException(s"Empty column name map provided.  At least one name is required")
     val victimNames = names.keys.toList
+    //验证列是否存在
     validateColumnsExist(victimNames)
+    //新的列名
     val newNames = names.values.toList
+    //新的列名有重复列名抛出异常
     if (newNames.size != newNames.distinct.size) {
+      //无效的新列名称不唯一
       throw new IllegalArgumentException(s"Invalid new column names are not unique: $newNames")
     }
     if (!forCopy) {
+      //
       val safeNames = columnNamesExcept(victimNames)
       for (n <- newNames) {
         if (safeNames.contains(n)) {
+          //
           throw new IllegalArgumentException(s"Invalid new column name '$n' collides with existing names which are not being renamed: $safeNames")
         }
       }
@@ -696,20 +720,23 @@ trait Schema {
    * 向模式添加一列
    * @param column New column
    * @return a new copy of the Schema with the column added
+    *         添加了列的Schema的新副本
    */
   def addColumn(column: Column): Schema = {
     if (columnNames.contains(column.name)) {
       throw new IllegalArgumentException(s"Cannot add a duplicate column name: ${column.name}")
     }
+    //:+方法用于在尾部追加元素,+:方法用于在头部追加元素
     copy(columns = columns :+ column)
   }
 
   /**
    * Add a column to the schema
    * 向模式添加一列
-   * @param columnName name
-   * @param dataType the type for the column
+   * @param columnName name 列的名称
+   * @param dataType the type for the column.列是数据类型
    * @return a new copy of the Schema with the column added
+    *       添加了列模式的新副本
    */
   def addColumn(columnName: String, dataType: DataType): Schema = {
     addColumn(Column(columnName, dataType))
@@ -722,7 +749,9 @@ trait Schema {
     * 如果列名以不同的数据类型存在,则会引发错误
    */
   def addColumnIfNotExists(columnName: String, dataType: DataType): Schema = {
+    //判断列的名称存在
     if (hasColumn(columnName)) {
+      //验证列的数据类型float64
       requireColumnIsType(columnName, DataTypes.float64)
       this
     }
@@ -736,7 +765,7 @@ trait Schema {
     * 返回附加了给定列的新模式
    */
   def addColumns(newColumns: Seq[Column]): Schema = {
-
+    //用于连接两个集合
     copy(columns = columns ++ newColumns)
   }
 
@@ -774,9 +803,10 @@ trait Schema {
 
   /**
    * Remove a list of columns from this schema
-   * 从该模式中删除列的列表
-   * @param columnNames the names to remove
+   * 从该模式中删除列表的列
+   * @param columnNames the names to remove,删除列的名称
    * @return a new copy of the Schema with the columns removed
+    *         删除了列的模式的新副本
    */
   def dropColumns(columnNames: Iterable[String]): Schema = {
     var newSchema = this
@@ -790,7 +820,7 @@ trait Schema {
 
   /**
    * Drop all columns with the 'ignore' data type.
-   * 删除“忽略”数据类型的所有列。
+   * 删除“ignore”数据类型的所有列,
    * The ignore data type is a slight hack for ignoring some columns on import.
     * 忽略数据类型对于忽略导入中的某些列是一个小小的破解
    */
@@ -801,10 +831,11 @@ trait Schema {
   /**
    * Remove columns by the indices
    * 通过索引删除列
-   * @param columnIndices the indices to remove
+   * @param columnIndices the indices to remove,删除的删除列
    * @return a new copy of the Schema with the columns removed
    */
   def dropColumnsByIndex(columnIndices: Seq[Int]): Schema = {
+    //filterNot返回所有假设条件返回false的元素组成的新集合
     val remainingColumns = columns.zipWithIndex.filterNot {
       case (col, index) =>
         columnIndices.contains(index)
@@ -816,13 +847,14 @@ trait Schema {
   /**
    * Convert data type for a column
    * 转换列的数据类型
-   * @param columnName the column to change
-   * @param updatedDataType the new data type for that column
+   * @param columnName the column to change,改变的列
+   * @param updatedDataType the new data type for that column,新的数据列的类型
    * @return the updated Schema
    */
   def convertType(columnName: String, updatedDataType: DataType): Schema = {
     val col = column(columnName)
     val index = columnIndex(columnName)
+    //列的类型更新updated
     copy(columns = columns.updated(index, col.copy(dataType = updatedDataType)))
   }
 
@@ -841,11 +873,12 @@ trait Schema {
   /**
    * Rename a column
    * 重命名一列
-   * @param existingName the old name
-   * @param newName the new name
-   * @return the updated schema
+   * @param existingName the old name 旧的列名
+   * @param newName the new name 新的列名
+   * @return the updated schema 更新的schema
    */
   def renameColumn(existingName: String, newName: String): Schema = {
+    //existingName旧的列名,newName新的列名
     renameColumns(Map(existingName -> newName))
   }
 
@@ -858,6 +891,7 @@ trait Schema {
   def renameColumns(names: Map[String, String]): Schema = {
     validateRenameMapping(names)
     copy(columns = columns.map({
+      //从名称列
       case found if names.contains(found.name) => found.copy(name = names(found.name))
       case notFound => notFound.copy()
     }))
@@ -865,23 +899,25 @@ trait Schema {
 
   /**
    * Re-order the columns in the schema.
-   * 重新排列架构中的列
+   * 重新排列schema中的列
    * No columns will be dropped.  Any column not named will be tacked onto the end.
-   *
+   * 没有列将被丢弃,任何未命名的列将被添加到最后
    * @param columnNames the names you want to occur first, in the order you want
+    *                    你想要按照你想要的顺序先出现的名字
    * @return the updated schema
    */
   def reorderColumns(columnNames: Vector[String]): Schema = {
     validateColumnsExist(columnNames)
     val reorderedColumns = columnNames.map(name => column(name))
     val additionalColumns = columns.filterNot(column => columnNames.contains(column.name))
+    //++ 该方法用于连接两个集合
     copy(columns = reorderedColumns ++ additionalColumns)
   }
 
   /**
    * Get the list of columns except those provided
-   * 获取列表以外的列
-   * @param columnNamesToExclude columns you want to filter
+   * 获取列列表,但提供的列除外
+   * @param columnNamesToExclude columns you want to filter 要过滤的列
    * @return the other columns, if any
    */
   def columnsExcept(columnNamesToExclude: Seq[String]): Seq[Column] = {
@@ -890,8 +926,8 @@ trait Schema {
 
   /**
    * Get the list of column names except those provided
-   * 获取除提供的列名以外的列名
-   * @param columnNamesToExclude column names you want to filter
+   * 获取列名,但提供的列名除外
+   * @param columnNamesToExclude column names you want to filter 要过滤的列名称
    * @return the other column names, if any
    */
   def columnNamesExcept(columnNamesToExclude: Seq[String]): Seq[String] = {
@@ -918,11 +954,13 @@ trait Schema {
    * create a column name that is unique, suitable for adding to the schema
    * (subject to race conditions, only provides unique name for schema as
    * currently defined)
-    * 创建一个唯一的列名称,适合添加到模式(根据竞争条件,只为当前定义的模式提供唯一的名称)
+    * 创建一个唯一的列名称,适合添加到schema(根据竞争条件,只为当前定义的模式提供唯一的名称)
    *
    * @param candidate a candidate string to start with, an _N number will be
    *                  append to make it unique
+    *                  候选字符串的开始,一个_n数量将追加到使它与众不同
    * @return unique column name for this schema, as currently defined
+    *         此schema的唯一列名,如目前定义的
    */
   def getNewColumnName(candidate: String): String = {
     var newName = candidate

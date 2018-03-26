@@ -25,7 +25,7 @@ trait ColumnSummaryStatisticsSummarization extends BaseFrame {
    * @note
    *       ==Sample Variance==
    *       Sample Variance is computed by the following formula:
-   *
+   *      样本方差用下面的公式计算：
    *       .. math::
    *
    *       \left( \frac{1}{W - 1} \right) * sum_{i} \

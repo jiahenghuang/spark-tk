@@ -15,10 +15,11 @@
  */
 package org.trustedanalytics.sparktk.models.regression.linear_regression
 
-import org.apache.spark.sql.Row
+import org.apache.spark.sql.{DataFrame, Row}
 import org.apache.spark.sql.catalyst.expressions.GenericRow
 import org.scalatest.Matchers
-import org.trustedanalytics.sparktk.frame.{ Frame, DataTypes, Column, FrameSchema }
+import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
+import org.trustedanalytics.sparktk.frame.{Column, DataTypes, Frame, FrameSchema}
 import org.trustedanalytics.sparktk.testutils.TestingSparkContextWordSpec
 
 class LinearRegressionModelTest extends TestingSparkContextWordSpec with Matchers {
@@ -49,6 +50,8 @@ class LinearRegressionModelTest extends TestingSparkContextWordSpec with Matcher
       val rdd = sparkContext.parallelize(rows)
       val frame = new Frame(rdd, schema)
 
+      val trainFrame: DataFrame = new FrameRdd(frame.schema, frame.rdd).toDataFrame
+      trainFrame.show
       intercept[IllegalArgumentException] {
         LinearRegressionModel.train(frame, List(), "y")
       }

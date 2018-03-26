@@ -24,7 +24,7 @@ import scala.collection.mutable.ListBuffer
 trait TakeSummarization extends BaseFrame {
   /**
    * Get data subset.
-   *
+   * 获取数据子集
    * @param n Number of rows to take
    * @param offset Optional offset into the frame where the take will start
    * @param columns Name of columns; if specified, only data from these columns will be collected

@@ -34,6 +34,7 @@ case class Append(frame: Frame) extends FrameTransform {
   require(frame != null, "frame parameter is required.")
 
   override def work(state: FrameState): FrameState = {
+    //union函数用于将两个DataFrame合并
     (state: FrameRdd).union(new FrameRdd(frame.schema, frame.rdd))
   }
 }

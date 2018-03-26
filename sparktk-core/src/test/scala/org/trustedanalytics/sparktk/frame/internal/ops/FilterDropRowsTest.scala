@@ -73,7 +73,7 @@ class FilterDropRowsTest extends TestingSparkContextWordSpec with Matchers {
       val frame = new Frame(rdd, schema)
 
       //drop rows of frame by predicate
-      //谓词放下框架的行
+      //删除谓词放下框架的行
       frame.dropRows(row => row(0) == "Kathy")
       frame.rowCount() shouldBe 4
 

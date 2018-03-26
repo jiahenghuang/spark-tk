@@ -34,6 +34,7 @@ object RddUtils extends Serializable {
 
   /**
    * Creates a DenseVectorRDD
+    * 密集的向量RDD
    * @param frameRdd
    * @param columns
    * @param weights
@@ -48,10 +49,11 @@ object RddUtils extends Serializable {
 
   /**
    * take an input RDD and return another RDD which contains the subset of the original contents
+    * 将输入法和返回另一个RDD包含原有内容的子集
    * @param rdd input RDD
-   * @param offset rows to be skipped before including rows in the new RDD
-   * @param count total rows to be included in the new RDD
-   * @param limit limit on number of rows to be included in the new RDD
+   * @param offset rows to be skipped before including rows in the new RDD 要跳过的行之前,包括在新的RDD的行
+   * @param count total rows to be included in the new RDD 全行被列入新的RDD
+   * @param limit limit on number of rows to be included in the new RDD 限行数被列入新的RDD
    */
   def getPagedRdd[T: ClassTag](rdd: RDD[T], offset: Long, count: Long, limit: Int): RDD[T] = {
 
@@ -62,6 +64,7 @@ object RddUtils extends Serializable {
     }
     //Start getting rows. We use the sums and counts to figure out which
     //partitions we need to read from and which to just ignore
+    //开始排队,我们使用总数和计数来计算我们需要从哪个分区读取,而忽略哪个分区
     val pagedRdd: RDD[T] = rdd.mapPartitionsWithIndex((i, rows) => {
       val (ct: Long, sum: Long) = sumsAndCounts(i)
       val thisPartStart = sum - ct

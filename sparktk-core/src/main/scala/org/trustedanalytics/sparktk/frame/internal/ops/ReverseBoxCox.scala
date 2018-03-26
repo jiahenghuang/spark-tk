@@ -25,6 +25,7 @@ import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
 trait ReverseBoxCoxTransform extends BaseFrame {
   /**
    * Computes the reverse box-cox transformation for a column in the frame
+    * 计算框架中列的反转 - 转换
    * @param columnName Name of the column to perform the reverse box-cox transformation on
    * @param lambdaValue Lambda power parameter
    * @param reverseBoxCoxColumnName Optional parameter specifying the name of column storing reverse box-cox computed value

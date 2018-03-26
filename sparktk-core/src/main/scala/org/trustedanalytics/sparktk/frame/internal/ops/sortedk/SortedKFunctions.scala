@@ -44,7 +44,7 @@ object SortedKFunctions extends Serializable {
     val pairRdd = frameRdd.mapRows(row => (row.values(columnNames.toVector).toList, row.data))
     implicit val keyOrdering = new MultiColumnKeyOrdering(ascendingPerColumn)
 
-   // val topRows = FrameOrderingUtils.takeOrderedTree(pairRdd, k, reduceTreeDepth)
+   //val topRows = FrameOrderingUtils.takeOrderedTree(pairRdd, k, reduceTreeDepth)
 
     // ascending is always true here because we control in the ordering
     //val topRowsRdd = frameRdd.sparkContext.parallelize(topRows).map { case (key, row) => row }

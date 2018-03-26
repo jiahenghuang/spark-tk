@@ -17,7 +17,7 @@ package org.trustedanalytics.sparktk.frame.internal.rdd
 
 import org.apache.spark.api.java.JavaRDD
 import org.apache.spark.mllib.linalg.DenseMatrix
-import org.apache.spark.org.trustedanalytics.sparktk.SparkAliases
+
 import org.apache.spark.rdd.RDD
 import org.apache.spark.sql.Row
 import org.apache.spark.sql.catalyst.expressions.GenericRow
@@ -41,20 +41,6 @@ object PythonJavaRdd {
     }.asJava
   }
 
-  def scalaToPython(rdd: RDD[Row]): JavaRDD[Array[Byte]] = {
-    rdd.map(convertToJavaSeq).mapPartitions { iter => new SparkAliases.AutoBatchedPickler(iter) }
-  }
-
-  def pythonToScala(jrdd: JavaRDD[Array[Byte]], scalaSchema: Schema): RDD[Row] = {
-    val raa: JavaRDD[Array[Any]] = pythonToJava(jrdd)
-    toRowRdd(raa.rdd, scalaSchema)
-  }
-
-  private def pythonToJava(jrdd: JavaRDD[Array[Byte]]): JavaRDD[Array[Any]] = {
-    // calling SparkAliases.MLLibSerDe, internally registers DenseVectorPickler, DenseMatrixPickler, SparseMatrixPickler, SparseVectorPickler for serialization purpose.
-    val j = SparkAliases.MLLibSerDe.pythonToJava(jrdd, batched = true)
-    toJavaArrayAnyRdd(j)
-  }
 
   def toJavaArrayAnyRdd(jrdd: RDD[Any]): JavaRDD[Array[Any]] = {
     toArrayAnyRdd(jrdd).toJavaRDD()

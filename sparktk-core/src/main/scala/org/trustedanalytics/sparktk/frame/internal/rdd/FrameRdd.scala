@@ -543,7 +543,7 @@ object FrameRdd {
 
   /**
    * converts a data frame to frame rdd
-    * 将数据frame转换为帧rdd
+    * 将数据frame转换为 rdd
    *
    * @param rdd a data frame
    * @return a frame rdd
@@ -555,33 +555,34 @@ object FrameRdd {
       list += new Column(field.name, sparkDataTypeToSchemaDataType(field.dataType))
     }
     val schema = new FrameSchema(list.toVector)
-    val convertedRdd: RDD[org.apache.spark.sql.Row] = rdd.map(row => {
+    //val convertedRdd: RDD[Row]=null
+    val convertedRdd: RDD[Row] = rdd.rdd.map(row => {
       val rowArray = new Array[Any](row.length)
-      row.toSeq.zipWithIndex.foreach {
-        case (o, i) =>
-          if (o == null) {
-            rowArray(i) = null
+         row.toSeq.zipWithIndex.foreach {
+            case (o, i) =>
+              if (o == null) {
+                rowArray(i) = null
+              }
+              else if (fields(i).dataType.getClass == TimestampType.getClass || fields(i).dataType.getClass == DateType.getClass) {
+                rowArray(i) = row.getTimestamp(i).getTime
+              }
+              else if (fields(i).dataType.getClass == ShortType.getClass) {
+                rowArray(i) = row.getShort(i).toInt
+              }
+              else if (fields(i).dataType.getClass == BooleanType.getClass) {
+                rowArray(i) = row.getBoolean(i).compareTo(false)
+              }
+              else if (fields(i).dataType.getClass == ByteType.getClass) {
+                rowArray(i) = row.getByte(i).toInt
+              }
+              else if (fields(i).dataType.getClass == classOf[DecimalType]) { // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
+                rowArray(i) = row.getAs[java.math.BigDecimal](i).doubleValue()
+              }
+              else {
+                val colType = schema.columns(i).dataType
+                rowArray(i) = o.asInstanceOf[colType.ScalaType]
+              }
           }
-          else if (fields(i).dataType.getClass == TimestampType.getClass || fields(i).dataType.getClass == DateType.getClass) {
-            rowArray(i) = row.getTimestamp(i).getTime
-          }
-          else if (fields(i).dataType.getClass == ShortType.getClass) {
-            rowArray(i) = row.getShort(i).toInt
-          }
-          else if (fields(i).dataType.getClass == BooleanType.getClass) {
-            rowArray(i) = row.getBoolean(i).compareTo(false)
-          }
-          else if (fields(i).dataType.getClass == ByteType.getClass) {
-            rowArray(i) = row.getByte(i).toInt
-          }
-          else if (fields(i).dataType.getClass == classOf[DecimalType]) { // DecimalType.getClass return value (DecimalType$) differs from expected DecimalType
-            rowArray(i) = row.getAs[java.math.BigDecimal](i).doubleValue()
-          }
-          else {
-            val colType = schema.columns(i).dataType
-            rowArray(i) = o.asInstanceOf[colType.ScalaType]
-          }
-      }
       new GenericRow(rowArray)
     }
     )
@@ -677,7 +678,7 @@ object FrameRdd {
 
   /**
    * Converts the schema object to a StructType for use in creating a SchemaRDD
-    * 将模式对象转换为用于创建SchemaRDD的StructType
+    * 将schema对象转换为用于创建SchemaRDD的StructType
    *
    * @return StructType with StructFields corresponding to the columns of the schema object
     *         StructType与StructFields对应的模式对象的列
@@ -685,11 +686,12 @@ object FrameRdd {
   def schemaToStructType(schema: Schema): StructType = {
     val fields: Seq[StructField] = schema.columns.map {
       column =>
+        //\\s匹配任意的空白符
         StructField(column.name.replaceAll("\\s", ""), schemaDataTypeToSqlDataType(column.dataType), nullable = true)
     }
     StructType(fields)
   }
-
+  //模式数据类型转换为Sql数据类型
   def schemaDataTypeToSqlDataType(dataType: DataTypes.DataType): org.apache.spark.sql.types.DataType = {
     dataType match {
       case x if x.equals(DataTypes.int32) => IntegerType

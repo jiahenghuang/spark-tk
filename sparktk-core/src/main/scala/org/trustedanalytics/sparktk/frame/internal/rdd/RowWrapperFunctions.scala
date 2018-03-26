@@ -15,12 +15,10 @@
  */
 package org.trustedanalytics.sparktk.frame.internal.rdd
 
-import breeze.linalg.{ DenseVector => BDV }
+import breeze.linalg.{DenseVector => BDV}
 import org.apache.spark.SparkException
-import org.apache.spark.mllib.linalg.{ Vectors, Vector, DenseVector }
-import org.apache.spark.mllib.org.trustedanalytics.sparktk.MllibAliases
+import org.apache.spark.mllib.linalg.{DenseVector, Vector, Vectors}
 import org.apache.spark.mllib.regression.LabeledPoint
-import MllibAliases.{ NumericParser, parseNumeric }
 import org.trustedanalytics.sparktk.frame.DataTypes
 import org.trustedanalytics.sparktk.frame.internal.RowWrapper
 
@@ -114,7 +112,7 @@ object LabeledPointWithFrequency {
   /**
    * Parses a string resulted from `LabeledPointWithFrequency#toString` into
    * an [[LabeledPointWithFrequency]].
-   */
+   *//*
   def parse(s: String): LabeledPointWithFrequency = {
     if (s.startsWith("(")) {
       NumericParser.parse(s) match {
@@ -131,5 +129,5 @@ object LabeledPointWithFrequency {
       val frequency = java.lang.Double.parseDouble(parts(2))
       LabeledPointWithFrequency(label, features, frequency)
     }
-  }
+  }*/
 }

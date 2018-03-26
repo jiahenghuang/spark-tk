@@ -23,8 +23,8 @@ trait CountSummarization extends BaseFrame {
   /**
    * Count the number of rows which meet the given criteria specified by a predicate.
    * 计算符合由谓词指定的给定条件的行数
-   * @param whereFunction Evaluates the row to a boolean
-   * @return Number of rows matching qualifications.
+   * @param whereFunction Evaluates the row to a boolean 将行求值为布尔值
+   * @return Number of rows matching qualifications. 匹配的行数
    */
   def count(whereFunction: Row => Boolean): Long = {
     execute(Count(whereFunction))

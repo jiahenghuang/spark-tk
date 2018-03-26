@@ -215,6 +215,7 @@ object DataTypes {
 
     override def isType(raw: Any): Boolean = {
       // where null is allowed we accept null as this type
+      //在允许null的地方,我们接受null作为这种类型
       raw == null || raw.isInstanceOf[String]
     }
 
@@ -844,7 +845,6 @@ object DataTypes {
   /**
    * Match java type object and return DataType instance.
     * 匹配java类型的对象并返回DataType实例
-   *
    * @return DataType instance
    */
   def javaTypeToDataType(a: java.lang.Class[_]): DataType = {
@@ -853,7 +853,7 @@ object DataTypes {
     val floatType = classOf[java.lang.Float]
     val doubleType = classOf[java.lang.Double]
     val stringType = classOf[java.lang.String]
-
+    //注意匹配顿号
     a match {
       case `intType` => int32
       case `longType` => int64

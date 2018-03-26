@@ -35,16 +35,7 @@ trait TkSaveableObject {
    */
   def loadTkSaveableObject(sc: SparkContext, path: String, formatVersion: Int, tkMetadata: JValue): Any
 
-  /**
-   * Load method for general path expecting a specific type
-   * @param tc active TkContext
-   * @param path the source path
-   * @tparam T the type of the object expected to load
-   * @return loaded object
-   */
-  def load[T](tc: TkContext, path: String): T = {
-    tc.load(path).asInstanceOf[T]
-  }
+
 
   /**
    * ID for the format of how the object is save/load-ed.  By default it is the object's type name

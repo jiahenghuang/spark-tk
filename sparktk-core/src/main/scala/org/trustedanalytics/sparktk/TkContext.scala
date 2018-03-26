@@ -20,8 +20,7 @@ import org.slf4j.LoggerFactory
 import org.apache.maven.artifact.versioning.DefaultArtifactVersion
 
 import org.apache.spark.api.java.JavaSparkContext
-import org.trustedanalytics.sparktk.saveload.Loaders
-import org.trustedanalytics.sparktk.saveload.Loaders.LoaderType
+
 
 /**
  * Context for operating with sparktk
@@ -55,16 +54,7 @@ class TkContext(jsc: JavaSparkContext) extends Serializable {
   require(checkSparkBuildVersionCompatibility(), s"Spark Build Version $sparkBuildVersion " +
     s"is not compatible with Spark Runtime $sparkRuntimeVersion")
 
-  /**
-   * Loads a sparktk thing which has been saved at the given path
-   *
-   * @param path location of the sparktk thing
-   * @param otherLoaders Optional loaders from other libraries, where each map entry has the format id and LoaderType.
-   * @return
-   */
-  def load(path: String, otherLoaders: Option[Map[String, LoaderType]] = None): Any = {
-    Loaders.load(sc, path, otherLoaders)
-  }
+
 
   /**
    * Set the level of logging for the scala-side "sparktk" logger

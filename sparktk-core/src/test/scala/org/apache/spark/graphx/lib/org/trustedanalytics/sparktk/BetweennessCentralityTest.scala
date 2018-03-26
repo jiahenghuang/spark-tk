@@ -19,20 +19,10 @@ import org.apache.spark.graphx._
 import org.scalatest.Matchers
 import org.trustedanalytics.sparktk.testutils.TestingSparkContextWordSpec
 import org.scalautils._
-import Tolerance._
 
 class BetweennessCentralityTest extends TestingSparkContextWordSpec with Matchers {
 
-  implicit val tupleEq = new Equality[(Long, Double)] {
-    def areEqual(a: (Long, Double), b: Any): Boolean =
-      (a, b) match {
-        case ((a1: Long, a2: Double), (b1: Long, b2: Float)) => a1 == b1 && a2 === b2.toDouble +- 0.01
-        case ((a1: Long, a2: Double), (b1: Long, b2: Double)) => a1 == b1 && a2 === b2.toDouble +- 0.01
-        case ((a1: Long, a2: Double), (b1: Int, b2: Double)) => a1 == b1 && a2 === b2.toDouble +- 0.01
-        case ((a1: Long, a2: Double), (b1: Int, b2: Float)) => a1 == b1 && a2 === b2.toDouble +- 0.01
-        case _ => false
-      }
-  }
+
 
   "Betweenness Centrality" should {
     def getGraph: Graph[String, Double] = {

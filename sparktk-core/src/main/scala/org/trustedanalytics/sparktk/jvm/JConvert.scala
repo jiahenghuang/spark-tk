@@ -15,15 +15,12 @@
  */
 package org.trustedanalytics.sparktk.jvm
 
-import java.util
-import java.util.{ ArrayList => JArrayList, List => JList, Map => JMap }
+import java.util.{ArrayList => JArrayList, List => JList, Map => JMap}
 
 import org.apache.spark.SparkContext
 import org.apache.spark.api.java.JavaSparkContext
 import org.apache.spark.mllib.linalg.DenseMatrix
-import org.joda.time.{ DateTime, DateTimeZone }
-import org.apache.spark.org.trustedanalytics.sparktk.SparkAliases
-import org.trustedanalytics.sparktk.frame.{ Column, DataTypes, FrameSchema }
+import org.joda.time.{DateTime, DateTimeZone}
 
 import scala.collection.JavaConverters._
 //import scala.collection.mutable
@@ -63,7 +60,7 @@ object JConvert extends Serializable {
 
   def fromOption(o: Option[Any]): Any = o.orNull
 
-  def scalaMapToPython[K, V](m: Map[K, V]): JMap[K, V] = SparkAliases.JavaUtils.mapAsSerializableJavaMap(m)
+  //def scalaMapToPython[K, V](m: Map[K, V]): JMap[K, V] = SparkAliases.JavaUtils.mapAsSerializableJavaMap(m)
 
   def scalaSeqToPython[T](seq: Seq[T]): JList[T] = seq.asJava
 
@@ -82,7 +79,7 @@ object JConvert extends Serializable {
 
   def toScalaTuple2[T](a: T, b: T): (T, T) = (a, b)
 
-  def toScalaMap[K, V](jm: java.util.Map[K, V]): Map[K, V] = SparkAliases.PythonUtils.toScalaMap(jm)
+  //def toScalaMap[K, V](jm: java.util.Map[K, V]): Map[K, V] = SparkAliases.PythonUtils.toScalaMap(jm)
 
   def combineScalaMap[K, V](seq: Seq[Map[K, V]]): Map[K, V] = {
     seq.reduce(_ ++ _)

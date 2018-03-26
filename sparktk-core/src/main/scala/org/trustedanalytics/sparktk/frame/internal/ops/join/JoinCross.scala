@@ -18,7 +18,7 @@ package org.trustedanalytics.sparktk.frame.internal.ops.join
 import org.trustedanalytics.sparktk.frame.Frame
 import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
 import org.trustedanalytics.sparktk.frame.internal.{ FrameState, FrameSummarization, BaseFrame }
-
+//笛卡尔连接
 trait JoinCrossSummarization extends BaseFrame {
 
   /**

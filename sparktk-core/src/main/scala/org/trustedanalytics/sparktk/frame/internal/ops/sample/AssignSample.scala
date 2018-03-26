@@ -20,7 +20,7 @@ import org.apache.spark.sql.Row
 import org.trustedanalytics.sparktk.frame._
 import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
 import org.trustedanalytics.sparktk.frame.internal.{ BaseFrame, FrameState, FrameTransform }
-
+//随机将类分配给给定百分比向量的行
 trait AssignSampleTransform extends BaseFrame {
   /**
    * Randomly group rows into user-defined classes.

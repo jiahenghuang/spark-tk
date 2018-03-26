@@ -34,7 +34,7 @@ import org.trustedanalytics.sparktk.frame.internal.rdd.FrameRdd
 object TimeSeriesFunctions extends Serializable {
 
   // Spark SQL UDF for converting our datetime column (represented as a long) to a Timestamp datatype
-  val toTimestamp: UserDefinedFunction = udf((t: Long) => new Timestamp(t))
+  //val toTimestamp: UserDefinedFunction = udf((t: Long) => new Timestamp(t))
 
   /**
    * Creates a Frame for the specified TimeSeriesRdd

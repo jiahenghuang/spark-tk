@@ -64,6 +64,7 @@ case class SortedK(k: Int,
 
   override def work(state: FrameState): Frame = {
     // return new frame with top-k sorted records
+    //返回的top-k排序记录的新frame
     val sortedKFrame = SortedKFunctions.takeOrdered(
       state,
       k,
